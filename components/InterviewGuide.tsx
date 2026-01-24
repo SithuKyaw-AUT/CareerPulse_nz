@@ -25,15 +25,16 @@ const InterviewGuide: React.FC<Props> = ({ data }) => {
           <p className="text-slate-500 font-medium">15 curated questions with NZ-specific rationale and winning techniques.</p>
         </div>
 
-        <div className="flex gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200 overflow-x-auto no-scrollbar">
+        {/* Improved Sub-page Tabs Visibility */}
+        <div className="flex gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar">
           {categories.map(cat => (
             <button
               key={cat}
               onClick={() => setFilter(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all border ${
                 filter === cat 
-                ? 'bg-white text-indigo-600 shadow-sm' 
-                : 'text-slate-500 hover:text-slate-700'
+                ? 'bg-slate-900 text-white border-slate-900 shadow-lg' 
+                : 'bg-white text-slate-500 border-transparent hover:border-slate-200 hover:text-slate-800'
               }`}
             >
               {cat}

@@ -2,8 +2,7 @@
 import React from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend,
-  AreaChart, Area
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend
 } from 'recharts';
 import { CareerAnalysis } from '../types';
 
@@ -22,12 +21,23 @@ const MarketDashboard: React.FC<Props> = ({ data }) => {
 
   const skillsData = marketStats.topSkills.map(s => ({
     subject: s.name,
-    A: s.importance,
+    Importance: s.importance,
     fullMark: 100,
   }));
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
+      {/* Summary section at the TOP */}
+      <div className="bg-indigo-50 border border-indigo-100 p-8 rounded-3xl shadow-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-1.5 h-8 bg-indigo-600 rounded-full"></div>
+          <h4 className="text-indigo-900 font-black text-2xl uppercase tracking-tight">Summary</h4>
+        </div>
+        <div className="prose prose-indigo max-w-none text-indigo-800/80 leading-relaxed text-lg font-medium">
+          {marketStats.marketOutlook}
+        </div>
+      </div>
+
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
@@ -44,12 +54,12 @@ const MarketDashboard: React.FC<Props> = ({ data }) => {
         </div>
 
         <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Average Mid-Career Salary</p>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Avg Mid-Career Salary</p>
           <div className="flex items-baseline gap-1">
             <span className="text-4xl font-black text-slate-900">${(salaryData[1]?.Avg || 0).toFixed(0)}k</span>
             <span className="text-slate-400 text-xs font-medium">NZD / yr</span>
           </div>
-          <p className="text-xs text-slate-500 mt-4 italic">Based on current NZ market benchmarks</p>
+          <p className="text-xs text-slate-500 mt-4 italic">Benchmarked for local NZ markets</p>
         </div>
 
         <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
@@ -61,7 +71,7 @@ const MarketDashboard: React.FC<Props> = ({ data }) => {
               {marketStats.topSkills[0]?.demand}
             </div>
           </div>
-          <p className="text-xs text-slate-500 mt-4">Growth sector identified in {data.locationName}</p>
+          <p className="text-xs text-slate-500 mt-4 font-medium uppercase tracking-tighter">Verified High Interest Sector</p>
         </div>
       </div>
 
@@ -73,46 +83,54 @@ const MarketDashboard: React.FC<Props> = ({ data }) => {
             <div className="w-1 h-6 bg-indigo-600 rounded-full"></div>
             Salary Benchmarks (NZD)
           </h4>
-          <div className="h-[300px] w-full">
+          <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={salaryData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+              <BarChart data={salaryData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 700 }} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} unit="k" />
                 <Tooltip 
                   cursor={{ fill: '#f8fafc' }}
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontWeight: 600 }}
+                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontWeight: 700 }}
                 />
-                <Bar dataKey="Avg" fill="#6366f1" radius={[8, 8, 0, 0]} barSize={40} />
+                <Bar dataKey="Avg" fill="#6366f1" radius={[8, 8, 0, 0]} barSize={45} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Skills Importance Radar */}
+        {/* Skills Importance Radar - Updated for readability and legends */}
         <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
           <h4 className="text-lg font-extrabold text-slate-900 mb-6 flex items-center gap-2">
             <div className="w-1 h-6 bg-blue-500 rounded-full"></div>
             Core Competency Focus
           </h4>
-          <div className="h-[300px] w-full">
+          <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skillsData}>
-                <PolarGrid stroke="#f1f5f9" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 11, fontWeight: 700 }} />
-                <Radar name="Importance" dataKey="A" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.4} />
-                <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+              <RadarChart cx="50%" cy="45%" outerRadius="70%" data={skillsData}>
+                <PolarGrid stroke="#e2e8f0" />
+                <PolarAngleAxis 
+                  dataKey="subject" 
+                  tick={{ fill: '#475569', fontSize: 10, fontWeight: 800, width: 80 }} 
+                />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} axisLine={false} tick={false} />
+                <Radar 
+                  name="Priority Score" 
+                  dataKey="Importance" 
+                  stroke="#3b82f6" 
+                  fill="#3b82f6" 
+                  fillOpacity={0.5} 
+                  strokeWidth={3}
+                />
+                <Legend 
+                  wrapperStyle={{ paddingTop: '20px' }} 
+                  iconType="circle"
+                  formatter={(value) => <span className="text-slate-500 font-black text-[10px] uppercase tracking-widest">{value}</span>}
+                />
+                <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontWeight: 700 }} />
               </RadarChart>
             </ResponsiveContainer>
           </div>
-        </div>
-      </div>
-
-      {/* Market Outlook Text */}
-      <div className="bg-indigo-50 border border-indigo-100 p-8 rounded-3xl">
-        <h4 className="text-indigo-900 font-black text-xl mb-4">Market Outlook Summary</h4>
-        <div className="prose prose-indigo max-w-none text-indigo-800/80 leading-relaxed text-lg">
-          {marketStats.marketOutlook}
         </div>
       </div>
     </div>

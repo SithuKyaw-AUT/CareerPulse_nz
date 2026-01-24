@@ -39,23 +39,22 @@ const ChatBot: React.FC<Props> = ({ context }) => {
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
-      let systemInstruction = `You are a helpful NZ Career Assistant. 
-      IMPORTANT FORMATTING RULES:
+      let systemInstruction = `You are a direct and specific NZ Career Assistant. 
+      STRICT RULES:
+      - Answer ONLY the specific question asked. 
+      - DO NOT include introductory filler (e.g., "Certainly!", "That's a great question").
+      - DO NOT provide general context or extra explanation unless it is part of the answer.
       - Reply line-by-line. 
-      - Use clear line breaks between every sentence or point. 
-      - Keep language extremely simple and easy to read. 
-      - Use bullet points for any lists. 
-      - Avoid long paragraphs. 
-      - Be concise but highly practical.`;
+      - Use clear line breaks between every point. 
+      - Keep language simple.
+      - Use bullet points for lists.`;
 
       if (context) {
-        systemInstruction += `\n\nCURRENT CONTEXT:
+        systemInstruction += `\n\nCONTEXT (Use only if relevant to the question):
         Role: "${context.roleName}"
         Location: "${context.locationName}"
-        Market Demand Score: ${context.marketStats.demandScore}/10. 
-        Top Skills: ${context.marketStats.topSkills.map(s => s.name).join(', ')}.
-        Focus follow-up questions strictly on this analysis (roles, interview guide, or strategy). 
-        If asked something unrelated, briefly guide them back to their career strategy.`;
+        Demand Score: ${context.marketStats.demandScore}/10. 
+        Top Skills: ${context.marketStats.topSkills.map(s => s.name).join(', ')}.`;
       }
 
       const chat = ai.chats.create({
@@ -68,7 +67,7 @@ const ChatBot: React.FC<Props> = ({ context }) => {
       setMessages(prev => [...prev, botMsg]);
     } catch (error) {
       console.error(error);
-      setMessages(prev => [...prev, { role: 'model', text: "Connection error.\nPlease try again." }]);
+      setMessages(prev => [...prev, { role: 'model', text: "Connection error. Please try again." }]);
     } finally {
       setIsTyping(false);
     }
@@ -83,8 +82,8 @@ const ChatBot: React.FC<Props> = ({ context }) => {
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.5)]"></div>
               <div>
-                <span className="font-black text-sm block">NZ Career Assistant</span>
-                {context && <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Context: {context.roleName}</span>}
+                <span className="font-black text-sm block">NZ Assistant</span>
+                {context && <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{context.roleName}</span>}
               </div>
             </div>
             <button onClick={() => setIsOpen(false)} className="hover:bg-slate-800 rounded-xl p-2 transition-all">
@@ -104,17 +103,16 @@ const ChatBot: React.FC<Props> = ({ context }) => {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-slate-800 font-black text-lg">How can I help you today?</p>
-                  <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1 px-8">Ask about the dashboard insights, interview tips, or strategy adjustments.</p>
+                  <p className="text-slate-800 font-black text-lg">Direct follow-up help.</p>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1 px-8">Select a shortcut or type your question.</p>
                 </div>
                 
-                {/* Sample Question Chips */}
                 <div className="flex flex-wrap justify-center gap-2 px-4">
                   {sampleQuestions.map((q, i) => (
                     <button
                       key={i}
                       onClick={() => handleSendMessage(q)}
-                      className="text-[11px] font-bold bg-white border border-slate-200 text-slate-600 px-3 py-2 rounded-xl hover:border-indigo-600 hover:text-indigo-600 transition-all shadow-sm"
+                      className="text-[10px] font-black uppercase tracking-tight bg-white border border-slate-200 text-slate-600 px-3 py-2.5 rounded-xl hover:border-indigo-600 hover:text-indigo-600 transition-all shadow-sm"
                     >
                       {q}
                     </button>
@@ -144,25 +142,40 @@ const ChatBot: React.FC<Props> = ({ context }) => {
             )}
           </div>
 
-          {/* Input */}
-          <div className="p-4 bg-white border-t border-slate-100 flex gap-3">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-              placeholder="Ask a follow-up question..."
-              className="flex-1 bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold placeholder-slate-300 focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-            />
-            <button
-              onClick={() => handleSendMessage()}
-              disabled={isTyping}
-              className="bg-slate-900 text-white p-4 rounded-2xl hover:bg-black disabled:opacity-50 transition-all shadow-lg"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </button>
+          {/* Input Area with Integrated Suggestions */}
+          <div className="p-4 bg-white border-t border-slate-100 flex flex-col gap-3">
+            {messages.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                {sampleQuestions.map((q, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSendMessage(q)}
+                    className="whitespace-nowrap text-[9px] font-black uppercase tracking-tighter bg-slate-50 border border-slate-200 text-slate-500 px-2.5 py-1.5 rounded-lg hover:border-indigo-600 hover:text-indigo-600 transition-all"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-3">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder="Type your question..."
+                className="flex-1 bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold placeholder-slate-300 focus:ring-2 focus:ring-slate-900 outline-none transition-all"
+              />
+              <button
+                onClick={() => handleSendMessage()}
+                disabled={isTyping}
+                className="bg-slate-900 text-white p-4 rounded-2xl hover:bg-black disabled:opacity-50 transition-all shadow-lg"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       ) : (
@@ -177,7 +190,7 @@ const ChatBot: React.FC<Props> = ({ context }) => {
             </svg>
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
           </div>
-          <span className="hidden md:inline font-black text-sm uppercase tracking-widest">Ask Follow-up</span>
+          <span className="hidden md:inline font-black text-sm uppercase tracking-widest">Ask Assistant</span>
         </button>
       )}
     </div>

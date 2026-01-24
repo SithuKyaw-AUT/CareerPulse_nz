@@ -16,14 +16,23 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'jobs' | 'interview' | 'strategy'>('dashboard');
 
-  const handleSearch = useCallback(async (e?: React.FormEvent) => {
+  const mainSuggestions = [
+    "Project Management in Auckland",
+    "Junior Developer in Wellington",
+    "Registered Nurse in Christchurch",
+    "Accountant in Hamilton"
+  ];
+
+  const handleSearch = useCallback(async (e?: React.FormEvent, customQuery?: string) => {
     if (e) e.preventDefault();
-    if (!query.trim()) return;
+    const searchVal = customQuery || query;
+    if (!searchVal.trim()) return;
     
+    setQuery(searchVal);
     setIsLoading(true);
     setError(null);
     try {
-      const analysis = await gemini.analyzeRole(query);
+      const analysis = await gemini.analyzeRole(searchVal);
       setResult(analysis);
       setActiveTab('dashboard');
     } catch (err: any) {
@@ -95,14 +104,14 @@ const App: React.FC = () => {
               </svg>
             </div>
             <div>
-              <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">CareerPulse <span className="text-indigo-600">NZ</span></h1>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">AI Market Intelligence</p>
+              <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Kia Ora <span className="text-indigo-600">Careers</span></h1>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">AI Career Intelligence</p>
             </div>
           </div>
           <div className="hidden md:flex items-center gap-6">
              <div className="text-right">
-                <p className="text-xs font-black text-emerald-600 uppercase tracking-tighter">Real-time Data</p>
-                <p className="text-[10px] text-slate-400 font-bold uppercase">Updated just now</p>
+                <p className="text-xs font-black text-emerald-600 uppercase tracking-tighter">Live NZ Data</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase">Updated Real-Time</p>
              </div>
           </div>
         </div>
@@ -111,37 +120,55 @@ const App: React.FC = () => {
       {/* Hero Search */}
       <div className="bg-white border-b border-slate-100 py-16 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-6xl font-[900] text-slate-900 mb-8 tracking-tighter leading-[1.1]">
-            NZ Career Insights <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">Decoded with Precision.</span>
+          <h2 className="text-4xl md:text-5xl font-[900] text-slate-900 mb-8 tracking-tighter leading-tight">
+            Your NZ Job Search & Strategy Partner.
           </h2>
+          <p className="max-w-2xl mx-auto text-slate-500 font-medium text-lg mb-10">
+            Tell us the roles you want. We'll find current job listings, market intelligence, and prepare you for the interview.
+          </p>
           
-          <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
-            <div className="relative group">
-              <div className="absolute -inset-1.5 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-[2rem] blur opacity-15 group-hover:opacity-30 transition duration-1000"></div>
-              <div className="relative flex items-center bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden p-2">
-                <div className="pl-5 text-slate-400">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+          <div className="max-w-2xl mx-auto">
+            <form onSubmit={(e) => handleSearch(e)} className="relative mb-6">
+              <div className="relative group">
+                <div className="absolute -inset-1.5 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-[2rem] blur opacity-15 group-hover:opacity-30 transition duration-1000"></div>
+                <div className="relative flex items-center bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden p-2">
+                  <div className="pl-5 text-slate-400">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Describe your skills and desired role..."
+                    className="flex-1 px-5 py-4 text-xl text-slate-800 placeholder-slate-300 font-semibold focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isLoading || !query.trim()}
+                    className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black hover:bg-black transition-all disabled:opacity-50"
+                  >
+                    {isLoading ? 'Thinking...' : 'Analyse'}
+                  </button>
                 </div>
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="e.g. Project Management in Auckland..."
-                  className="flex-1 px-5 py-4 text-xl text-slate-800 placeholder-slate-300 font-semibold focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  disabled={isLoading || !query.trim()}
-                  className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black hover:bg-black transition-all disabled:opacity-50"
-                >
-                  {isLoading ? 'Processing...' : 'Analyze'}
-                </button>
               </div>
+            </form>
+
+            <div className="flex flex-wrap justify-center gap-2">
+              <span className="text-xs font-black text-slate-400 uppercase tracking-widest mr-2 self-center">Try searching:</span>
+              {mainSuggestions.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  onClick={() => handleSearch(undefined, suggestion)}
+                  className="text-xs font-bold text-slate-500 bg-slate-50 px-4 py-2 rounded-full border border-slate-200 hover:border-indigo-400 hover:text-indigo-600 transition-all"
+                >
+                  {suggestion}
+                </button>
+              ))}
             </div>
-            {error && <p className="mt-4 text-red-500 text-sm font-bold uppercase tracking-widest">{error}</p>}
-          </form>
+            {error && <p className="mt-6 text-red-500 text-sm font-bold uppercase tracking-widest">{error}</p>}
+          </div>
         </div>
       </div>
 
@@ -158,11 +185,10 @@ const App: React.FC = () => {
 
         {result && !isLoading && (
           <div className="space-y-12">
-            {/* Analysis Header & New Enhanced Tabs */}
             <div className="flex flex-col gap-10">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                  <span className="text-indigo-600 font-black text-xs uppercase tracking-[0.3em] mb-2 block">Career Intelligence Report</span>
+                  <span className="text-indigo-600 font-black text-xs uppercase tracking-[0.3em] mb-2 block">Market Report</span>
                   <h3 className="text-4xl font-black text-slate-900 tracking-tight">{result.roleName}</h3>
                   <p className="text-slate-500 font-bold text-lg mt-1 flex items-center gap-2">
                     <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -171,32 +197,31 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* High Visibility Tabs */}
               <div className="flex justify-center border-b border-slate-200">
-                <div className="flex gap-4 md:gap-12 overflow-x-auto no-scrollbar pb-1">
+                <div className="flex gap-4 md:gap-16 overflow-x-auto no-scrollbar pb-1">
                   {[
-                    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-                    { id: 'jobs', label: 'Live Roles', icon: '💼' },
+                    { id: 'dashboard', label: 'Intelligence', icon: '📊' },
+                    { id: 'jobs', label: 'Advertised Roles', icon: '💼' },
                     { id: 'strategy', label: 'Winning Strategy', icon: '🎯' },
                     { id: 'interview', label: 'Interview Prep', icon: '🎤' }
                   ].map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id as any)}
-                      className={`relative flex items-center gap-3 px-2 py-4 transition-all whitespace-nowrap group ${
+                      className={`relative flex items-center gap-3 px-4 py-5 transition-all whitespace-nowrap group ${
                         activeTab === tab.id
                           ? 'text-indigo-600'
                           : 'text-slate-400 hover:text-slate-600'
                       }`}
                     >
-                      <span className={`text-xl transition-transform group-hover:scale-110 ${activeTab === tab.id ? 'scale-110' : ''}`}>
+                      <span className={`text-2xl transition-transform group-hover:scale-110 ${activeTab === tab.id ? 'scale-110' : ''}`}>
                         {tab.icon}
                       </span>
-                      <span className={`text-sm font-black uppercase tracking-widest ${activeTab === tab.id ? 'opacity-100' : 'opacity-70'}`}>
+                      <span className={`text-sm font-black uppercase tracking-[0.15em] ${activeTab === tab.id ? 'opacity-100' : 'opacity-70'}`}>
                         {tab.label}
                       </span>
                       {activeTab === tab.id && (
-                        <div className="absolute bottom-0 left-0 w-full h-1 bg-indigo-600 rounded-full animate-in slide-in-from-left-2 duration-300"></div>
+                        <div className="absolute bottom-0 left-0 w-full h-1.5 bg-indigo-600 rounded-full animate-in slide-in-from-left-2 duration-300"></div>
                       )}
                     </button>
                   ))}
@@ -204,7 +229,6 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Content Views */}
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
               {activeTab === 'dashboard' && <MarketDashboard data={result} />}
               
