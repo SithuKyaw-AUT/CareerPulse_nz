@@ -1,0 +1,7 @@
+{
+  "name": "Kia Ora Careers",
+  "description": "A comprehensive job search and career strategy app tailored for the New Zealand market. It uses Gemini 3 Pro with Thinking Mode to analyze your skills, find current local job listings via Google Search, and generate personalized interview guides.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
