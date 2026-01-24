@@ -20,7 +20,8 @@ const App: React.FC = () => {
     "Project Management in Auckland",
     "Junior Developer in Wellington",
     "Registered Nurse in Christchurch",
-    "Accountant in Hamilton"
+    "Accountant in Hamilton",
+    "GIS Analyst in Wellington"
   ];
 
   const handleSearch = useCallback(async (e?: React.FormEvent, customQuery?: string) => {
