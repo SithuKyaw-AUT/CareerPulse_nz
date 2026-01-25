@@ -31,11 +31,11 @@ export class GeminiService {
   }
 
   async analyzeRole(query: string): Promise<CareerAnalysis> {
-    // CRITICAL FIX: Use VITE_ prefix for environment variables
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    // Use process.env to match vite.config.ts
+    const apiKey = process.env.GEMINI_API_KEY;
     
     if (!apiKey) {
-      throw new Error('VITE_GEMINI_API_KEY not found in environment variables');
+      throw new Error('GEMINI_API_KEY not found in environment variables');
     }
 
     const ai = new GoogleGenAI({ apiKey });
@@ -89,7 +89,7 @@ export class GeminiService {
       return this.parseResponse(text, groundingLinks);
     } catch (error: any) {
       console.error('Gemini API Error:', error);
-      throw new Error(`AI Analysis Failed: ${error.message}`);
+      throw error;
     }
   }
 
