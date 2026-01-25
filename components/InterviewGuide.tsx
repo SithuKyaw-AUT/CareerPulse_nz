@@ -19,9 +19,13 @@ const InterviewGuide: React.FC<Props> = ({ data }) => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
           <div className="flex items-center gap-4 mb-2">
-            <div className="w-16 h-1 bg-indigo-600 rounded-full"></div>
+            <div className="p-3 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-100 text-white">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
             <div>
-              <h3 className="text-3xl font-black text-slate-900">Performance Guide</h3>
+              <h3 className="text-3xl font-black text-slate-900 tracking-tight">Performance Guide</h3>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">High-impact prep for the NZ interview stage</p>
             </div>
           </div>

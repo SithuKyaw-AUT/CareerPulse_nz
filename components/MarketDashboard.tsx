@@ -2,7 +2,7 @@
 import React from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, Cell
 } from 'recharts';
 import { CareerAnalysis } from '../types';
 
@@ -25,9 +25,11 @@ const MarketDashboard: React.FC<Props> = ({ data }) => {
     fullMark: 100,
   }));
 
+  const COLORS = ['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
-      {/* Summary section at the TOP */}
+      {/* Summary section */}
       <div className="bg-indigo-50 border border-indigo-100 p-8 rounded-3xl shadow-sm">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-1.5 h-8 bg-indigo-600 rounded-full"></div>
@@ -90,9 +92,42 @@ const MarketDashboard: React.FC<Props> = ({ data }) => {
         </div>
       </div>
 
+      {/* Regional Comparison Chart for National Queries */}
+      {marketStats.cityComparison && marketStats.cityComparison.length > 0 && (
+        <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <h4 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+              <div className="w-1 h-6 bg-emerald-500 rounded-full"></div>
+              Regional Demand Comparison
+            </h4>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full">
+              Across Major NZ Hubs
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 font-medium mb-6">Visualizing demand hotspots for this role across New Zealand's main economic centers.</p>
+          <div className="h-[250px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={marketStats.cityComparison} layout="vertical" margin={{ left: 40, right: 30 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                <XAxis type="number" domain={[0, 10]} hide />
+                <YAxis dataKey="city" type="category" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontWeight: 700, fontSize: 12 }} />
+                <Tooltip 
+                  cursor={{ fill: '#f8fafc' }}
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontWeight: 700 }}
+                />
+                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
+                  {marketStats.cityComparison.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
       {/* Visual Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Salary Benchmarks Chart */}
         <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h4 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
@@ -120,7 +155,6 @@ const MarketDashboard: React.FC<Props> = ({ data }) => {
           </div>
         </div>
 
-        {/* Skills Importance Radar - Updated for readability and legends */}
         <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h4 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">

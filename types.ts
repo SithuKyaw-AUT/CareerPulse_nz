@@ -41,6 +41,7 @@ export interface CareerAnalysis {
     salaryData: SalaryData[];
     topSkills: SkillMetric[];
     marketOutlook: string;
+    cityComparison?: { city: string; value: number }[]; // Optional comparison for national queries
   };
   suggestions: StrategyItem[];
   interviewGuide: InterviewQuestion[];

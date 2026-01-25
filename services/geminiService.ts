@@ -12,8 +12,12 @@ export class GeminiService {
   }
 
   async analyzeRole(query: string): Promise<CareerAnalysis> {
+    const isNational = !query.toLowerCase().match(/(auckland|wellington|christchurch|hamilton|tauranga|dunedin|palmerston|nelson|napier|hastings|rotorua|whangarei|new plymouth|invercargill|whanganui|gisborne)/);
+
     const prompt = `
       Perform an exhaustive career intelligence analysis for: "${query}" in the New Zealand context.
+
+      ${isNational ? 'IMPORTANT: The query is broad or national. You MUST include a "cityComparison" array in "marketStats" comparing the Demand Score (1-10) across Auckland, Wellington, and Christchurch.' : ''}
 
       You must provide a dual-part response:
       1. A conversational markdown summary of the market.
@@ -22,13 +26,14 @@ export class GeminiService {
       JSON STRUCTURE REQUIRED:
       {
         "roleName": "Specific Role Title",
-        "locationName": "City/Region in NZ",
+        "locationName": "City/Region or 'New Zealand'",
         "summary": "Brief 2-sentence market pulse",
         "marketStats": {
           "demandScore": 1-10,
           "salaryData": [{"level": "Junior", "min": 60000, "max": 80000}, ...],
           "topSkills": [{"name": "Skill Name", "importance": 85, "demand": "Growing"}, ...],
-          "marketOutlook": "Detailed outlook text"
+          "marketOutlook": "Detailed outlook text",
+          "cityComparison": [{"city": "Auckland", "value": 8}, {"city": "Wellington", "value": 7}, {"city": "Christchurch", "value": 6}] (ONLY IF BROAD/NATIONAL QUERY)
         },
         "suggestions": [
           {

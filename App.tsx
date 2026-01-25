@@ -51,9 +51,13 @@ const App: React.FC = () => {
     return (
       <div className="max-w-4xl mx-auto space-y-12">
         <div className="flex items-center gap-4 mb-8">
-           <div className="w-16 h-1 bg-indigo-600 rounded-full"></div>
+           <div className="p-3 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-100 text-white">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+           </div>
            <div>
-            <h3 className="text-3xl font-black text-slate-900">The Winning Strategy</h3>
+            <h3 className="text-3xl font-black text-slate-900 tracking-tight">The Winning Strategy</h3>
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Personalized career roadmap with tactical moves</p>
            </div>
         </div>
@@ -196,11 +200,10 @@ const App: React.FC = () => {
                   <h3 className="text-4xl font-black text-slate-900 tracking-tight">{result.roleName}</h3>
                   <p className="text-slate-500 font-bold text-lg mt-1 flex items-center gap-2">
                     <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    {result.locationName}, NZ
+                    {result.locationName}
                   </p>
                 </div>
 
-                {/* NZ Job Pro Tip added on the right side */}
                 <div className="md:max-w-xs text-right bg-emerald-50 border-r-4 border-emerald-500 p-4 rounded-l-2xl shadow-sm self-start">
                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1 flex items-center justify-end gap-2">
                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
@@ -215,10 +218,10 @@ const App: React.FC = () => {
               <div className="flex justify-center border-b border-slate-200">
                 <div className="flex gap-4 md:gap-16 overflow-x-auto no-scrollbar pb-1">
                   {[
-                    { id: 'dashboard', label: 'Intelligence', icon: '🧠' },
+                    { id: 'dashboard', label: 'Intelligence', icon: '📈' },
                     { id: 'jobs', label: 'Advertised Roles', icon: '📫' },
                     { id: 'strategy', label: 'Winning Strategy', icon: '🎯' },
-                    { id: 'interview', label: 'Interview Prep', icon: '🗣️' }
+                    { id: 'interview', label: 'Interview Prep', icon: '🤝' }
                   ].map((tab) => (
                     <button
                       key={tab.id}

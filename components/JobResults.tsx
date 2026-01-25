@@ -11,13 +11,17 @@ const JobResults: React.FC<Props> = ({ data }) => {
     <div className="animate-in fade-in slide-in-from-bottom-4">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 font-bold">2</div>
+          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-100">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
           <div>
             <h3 className="text-2xl font-black text-slate-900 tracking-tight">Live NZ Listings</h3>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Real-time vacancies discovered via Google Search Grounding</p>
           </div>
         </div>
-        <span className="hidden sm:inline-block bg-emerald-50 text-emerald-700 text-[10px] font-black px-2 py-1 rounded-md uppercase tracking-[0.2em] border border-emerald-100">
+        <span className="hidden sm:inline-block bg-emerald-50 text-emerald-700 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-[0.2em] border border-emerald-100">
           Search Powered
         </span>
       </div>
