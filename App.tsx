@@ -38,7 +38,11 @@ const App: React.FC = () => {
       setActiveTab('dashboard');
     } catch (err: any) {
       console.error(err);
-      setError("Analysis failed. Please try a more specific role or location.");
+      if (err.message?.includes('429') || err.status === 429 || err.toString().includes('RESOURCE_EXHAUSTED')) {
+        setError("Rate limit reached. Please wait 1 minute before searching again.");
+      } else {
+        setError("Analysis failed. Please try a more specific role or location.");
+      }
     } finally {
       setIsLoading(false);
     }

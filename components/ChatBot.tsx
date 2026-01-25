@@ -65,9 +65,13 @@ const ChatBot: React.FC<Props> = ({ context }) => {
       const response = await chat.sendMessage({ message: messageText });
       const botMsg: ChatMessage = { role: 'model', text: response.text || "Sorry, I couldn't process that." };
       setMessages(prev => [...prev, botMsg]);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      setMessages(prev => [...prev, { role: 'model', text: "Connection error. Please try again." }]);
+      let errorMsg = "Connection error. Please try again.";
+      if (error.message?.includes('429') || error.status === 429 || error.toString().includes('RESOURCE_EXHAUSTED')) {
+        errorMsg = "I've reached my rate limit for now. Please wait a minute before asking another question.";
+      }
+      setMessages(prev => [...prev, { role: 'model', text: errorMsg }]);
     } finally {
       setIsTyping(false);
     }

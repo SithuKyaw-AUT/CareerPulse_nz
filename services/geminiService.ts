@@ -11,6 +11,27 @@ export class GeminiService {
     this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
   }
 
+  private async withRetry<T>(fn: () => Promise<T>, maxRetries = 3, baseDelay = 2000): Promise<T> {
+    let lastError: any;
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        return await fn();
+      } catch (error: any) {
+        lastError = error;
+        const isRateLimit = error.message?.includes('429') || error.status === 429 || error.toString().includes('RESOURCE_EXHAUSTED');
+        
+        if (isRateLimit && i < maxRetries - 1) {
+          const delay = baseDelay * Math.pow(2, i);
+          console.warn(`Rate limit hit. Retrying in ${delay}ms... (Attempt ${i + 1}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        throw error;
+      }
+    }
+    throw lastError;
+  }
+
   async analyzeRole(query: string): Promise<CareerAnalysis> {
     const isNational = !query.toLowerCase().match(/(auckland|wellington|christchurch|hamilton|tauranga|dunedin|palmerston|nelson|napier|hastings|rotorua|whangarei|new plymouth|invercargill|whanganui|gisborne)/);
 
@@ -67,14 +88,14 @@ export class GeminiService {
       IMPORTANT: NZ Context, NZD currency, NZ English.
     `;
 
-    const response = await this.ai.models.generateContent({
+    const response = await this.withRetry(() => this.ai.models.generateContent({
       model: MODEL_NAME,
       contents: prompt,
       config: {
         thinkingConfig: { thinkingBudget: 32768 },
         tools: [{ googleSearch: {} }],
       },
-    });
+    }));
 
     const text = response.text || "";
     
