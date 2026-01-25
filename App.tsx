@@ -143,8 +143,8 @@ const App: React.FC = () => {
             <form onSubmit={(e) => handleSearch(e)} className="relative mb-6">
               <div className="relative group">
                 <div className="absolute -inset-1.5 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-[2.5rem] blur opacity-15 group-hover:opacity-30 transition duration-1000"></div>
-                <div className="relative flex items-center bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden p-2">
-                  <div className="pl-5 text-slate-400">
+                <div className="relative flex flex-col sm:flex-row items-stretch sm:items-center bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden p-2 gap-2 sm:gap-0">
+                  <div className="hidden sm:flex pl-5 text-slate-400">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
@@ -154,14 +154,14 @@ const App: React.FC = () => {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="e.g., Insights Analyst in Auckland ..."
-                    className="flex-1 px-5 py-4 text-xl text-slate-800 placeholder-slate-300 font-semibold focus:outline-none"
+                    className="flex-1 px-5 py-4 text-lg sm:text-xl text-slate-800 placeholder-slate-300 font-semibold focus:outline-none"
                   />
                   <button
                     type="submit"
                     disabled={isLoading || !query.trim()}
-                    className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black hover:bg-indigo-700 transition-all disabled:opacity-50 min-w-[140px]"
+                    className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black hover:bg-indigo-700 transition-all disabled:opacity-50 min-w-full sm:min-w-[140px]"
                   >
-                    {isLoading ? 'Thinking...' : 'Analyse'}
+                    {isLoading ? 'Processing...' : 'Analyse'}
                   </button>
                 </div>
               </div>
@@ -179,6 +179,15 @@ const App: React.FC = () => {
                 </button>
               ))}
             </div>
+
+            {isLoading && (
+              <div className="mt-6 animate-pulse flex items-center justify-center gap-3">
+                <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce delay-75"></div>
+                <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce delay-150"></div>
+                <span className="text-sm font-bold text-indigo-600 uppercase tracking-widest">Gathering market data and searching live jobs...</span>
+              </div>
+            )}
 
             {error && (
               <div className="mt-8 p-8 bg-white border border-slate-200 rounded-[2rem] text-left shadow-2xl animate-in fade-in slide-in-from-top-2">

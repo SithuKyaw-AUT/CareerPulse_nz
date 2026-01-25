@@ -2,7 +2,7 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { CareerAnalysis } from "../types";
 
-const MODEL_NAME = 'gemini-3-flash-preview';
+const MODEL_NAME = 'gemini-2.5-flash-preview'; // Changed model to gemini-2.5-flash-preview
 
 export class GeminiService {
   constructor() {}
@@ -66,7 +66,7 @@ export class GeminiService {
         model: MODEL_NAME,
         contents: prompt,
         config: {
-          thinkingConfig: { thinkingBudget: 24576 },
+          thinkingConfig: { thinkingBudget: 24576 }, // Adjusted budget as per 2.5 Flash guidelines
           tools: [{ googleSearch: {} }],
         },
       }));
