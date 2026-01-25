@@ -144,7 +144,7 @@ const App: React.FC = () => {
             NZ Career Navigator
           </h2>
           <p className="max-w-2xl mx-auto text-slate-500 font-medium text-lg mb-10">
-            Paste your notes, skills, or desired roles below. Our AI will scan the NZ market, find live jobs, and build your winning strategy.
+            Paste your raw notes, skills, or desired roles below. Our AI will scan the NZ market, find live jobs, and build your winning strategy.
           </p>
           
           <div className="max-w-2xl mx-auto">
