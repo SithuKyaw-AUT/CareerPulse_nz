@@ -1,8 +1,7 @@
-
-import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
+import { GoogleGenerativeAI, GenerateContentResponse } from "@google/generative-ai";
 import { CareerAnalysis } from "../types";
 
-const MODEL_NAME = 'gemini-2.5-flash-preview'; // Changed model to gemini-2.5-flash-preview
+const MODEL_NAME = 'gemini-2.0-flash-exp'; // Use a stable model
 
 export class GeminiService {
   constructor() {}
@@ -32,7 +31,14 @@ export class GeminiService {
   }
 
   async analyzeRole(query: string): Promise<CareerAnalysis> {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    
+    if (!apiKey) {
+      throw new Error('VITE_GEMINI_API_KEY not found in environment variables');
+    }
+
+    const ai = new GoogleGenerativeAI(apiKey);
+    const model = ai.getGenerativeModel({ model: MODEL_NAME });
 
     const isNational = !query.toLowerCase().match(/(auckland|wellington|christchurch|hamilton|tauranga|dunedin|palmerston|nelson|napier|hastings|rotorua|whangarei|new plymouth|invercargill|whanganui|gisborne)/);
 
@@ -58,31 +64,23 @@ export class GeminiService {
       }
 
       Context: NZD currency, NZ English, 15 interview questions total.
-      Tool: Find 5-8 live job listings on Seek.co.nz or TradeMe for this role via Google Search.
     `;
 
     try {
-      const response: GenerateContentResponse = await this.withRetry<GenerateContentResponse>(() => ai.models.generateContent({
-        model: MODEL_NAME,
-        contents: prompt,
-        config: {
-          thinkingConfig: { thinkingBudget: 24576 }, // Adjusted budget as per 2.5 Flash guidelines
-          tools: [{ googleSearch: {} }],
-        },
-      }));
+      const response = await this.withRetry(async () => {
+        const result = await model.generateContent(prompt);
+        return result.response;
+      });
 
-      const text = response.text || "";
-      const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-      const groundingLinks = groundingChunks
-        .filter(chunk => chunk.web)
-        .map(chunk => ({
-          title: chunk.web?.title || 'Job Listing',
-          url: chunk.web?.uri || '#'
-        }));
+      const text = response.text();
+      
+      // Note: grounding metadata might not be available with all models
+      const groundingLinks: {title: string, url: string}[] = [];
 
       return this.parseResponse(text, groundingLinks);
     } catch (error: any) {
-      throw error;
+      console.error('Gemini API Error:', error);
+      throw new Error(`AI Analysis Failed: ${error.message}`);
     }
   }
 
@@ -105,7 +103,7 @@ export class GeminiService {
       locationName: jsonData.locationName || "New Zealand",
       summary: jsonData.summary || "Active market detected.",
       nzProTip: jsonData.nzProTip || "Highlight local soft skills and cultural fit for Kiwi employers.",
-      marketStats: jsonData.marketStats || { demandScore: 7, salaryData: [], topSkills: [], marketOutlook: "" },
+      marketStats: jsonData.marketStats || { demandScore: 7, salaryData: [], topSkills: [], marketOutlook: "", cityComparison: [] },
       suggestions: jsonData.suggestions || [],
       interviewGuide: jsonData.interviewGuide || [],
       groundingLinks: links
