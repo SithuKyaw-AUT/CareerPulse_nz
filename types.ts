@@ -1,55 +1,68 @@
-
-export interface JobListing {
-  title: string;
-  source: string;
-  url: string;
-}
-
-export interface SalaryData {
-  level: string;
-  min: number;
-  max: number;
-}
-
-export interface SkillMetric {
-  name: string;
-  importance: number; // 1-100
-  demand: 'Growing' | 'Stable' | 'Declining';
-}
-
-export interface InterviewQuestion {
-  question: string;
-  category: 'Behavioral' | 'Technical' | 'Cultural' | 'Situational';
-  rationale: string;
-  technique: string; // e.g. "STAR Method", "Technical Logic", "Cultural Alignment"
-  exampleAnswer: string;
-}
-
-export interface StrategyItem {
-  title: string;
-  description: string;
-  timeline: string;
-  level: 'Entry' | 'Junior' | 'Mid-Senior' | 'Senior' | 'General';
-}
-
 export interface CareerAnalysis {
   roleName: string;
   locationName: string;
   summary: string;
   nzProTip: string;
-  marketStats: {
-    demandScore: number; // 1-10
-    salaryData: SalaryData[];
-    topSkills: SkillMetric[];
-    marketOutlook: string;
-    cityComparison?: { city: string; value: number }[]; // Optional comparison for national queries
+  
+  // New: Data quality indicators
+  dataQuality?: {
+    isGrounded: boolean;
+    confidence: 'high' | 'medium' | 'low';
+    sourceCount?: number;
+    groundingQuality?: string;
+    sources?: string;
+    lastUpdated?: string;
   };
-  suggestions: StrategyItem[];
+  
+  marketStats: {
+    demandScore: number;
+    salaryData: SalaryRange[];
+    topSkills: Skill[];
+    marketOutlook: string;
+    cityComparison?: CityComparison[];
+  };
+  
+  suggestions: CareerSuggestion[];
   interviewGuide: InterviewQuestion[];
-  groundingLinks: { title: string; url: string }[];
+  groundingLinks: GroundingLink[];
+  
+  // New: Search entry point for additional context
+  searchEntryPoint?: string | null;
 }
 
-export interface ChatMessage {
-  role: 'user' | 'model';
-  text: string;
+export interface SalaryRange {
+  level: string;
+  min: number;
+  max: number;
+}
+
+export interface Skill {
+  name: string;
+  importance: number;
+  demand: 'Growing' | 'Stable' | 'Declining';
+}
+
+export interface CityComparison {
+  city: string;
+  value: number;
+}
+
+export interface CareerSuggestion {
+  title: string;
+  description: string;
+  timeline: string;
+  level: string;
+}
+
+export interface InterviewQuestion {
+  question: string;
+  category: 'Behavioral' | 'Technical' | 'Cultural';
+  rationale: string;
+  technique: string;
+  exampleAnswer: string;
+}
+
+export interface GroundingLink {
+  title: string;
+  url: string;
 }
