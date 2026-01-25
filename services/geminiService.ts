@@ -5,10 +5,20 @@ import { CareerAnalysis, InterviewQuestion, StrategyItem } from "../types";
 const MODEL_NAME = 'gemini-3-pro-preview';
 
 export class GeminiService {
-  private ai: GoogleGenAI;
+  private ai: GoogleGenAI | null = null;
 
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+    try {
+      // Safely check if process exists before accessing to prevent ReferenceError in browser
+      const apiKey = typeof process !== 'undefined' ? process.env?.API_KEY : (globalThis as any).process?.env?.API_KEY;
+      if (apiKey) {
+        this.ai = new GoogleGenAI({ apiKey });
+      } else {
+        console.error("Gemini API Key is missing from environment.");
+      }
+    } catch (e) {
+      console.error("Failed to initialize GoogleGenAI service:", e);
+    }
   }
 
   private async withRetry<T>(fn: () => Promise<T>, maxRetries = 4, baseDelay = 3000): Promise<T> {
@@ -34,6 +44,10 @@ export class GeminiService {
   }
 
   async analyzeRole(query: string): Promise<CareerAnalysis> {
+    if (!this.ai) {
+      throw new Error("AI Service not initialized. Check API Key configuration.");
+    }
+
     const isNational = !query.toLowerCase().match(/(auckland|wellington|christchurch|hamilton|tauranga|dunedin|palmerston|nelson|napier|hastings|rotorua|whangarei|new plymouth|invercargill|whanganui|gisborne)/);
 
     const prompt = `
@@ -62,11 +76,11 @@ export class GeminiService {
       Tool: Find 5-8 live job listings on Seek.co.nz or TradeMe for this role via Google Search.
     `;
 
-    const response: GenerateContentResponse = await this.withRetry<GenerateContentResponse>(() => this.ai.models.generateContent({
+    const response: GenerateContentResponse = await this.withRetry<GenerateContentResponse>(() => this.ai!.models.generateContent({
       model: MODEL_NAME,
       contents: prompt,
       config: {
-        thinkingConfig: { thinkingBudget: 24576 },
+        thinkingConfig: { thinkingBudget: 32768 },
         tools: [{ googleSearch: {} }],
       },
     }));

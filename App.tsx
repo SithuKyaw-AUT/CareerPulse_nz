@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { GeminiService } from './services/geminiService';
 import { CareerAnalysis, StrategyItem } from './types';
 import JobResults from './components/JobResults';
@@ -7,9 +7,10 @@ import InterviewGuide from './components/InterviewGuide';
 import MarketDashboard from './components/MarketDashboard';
 import ChatBot from './components/ChatBot';
 
-const gemini = new GeminiService();
-
 const App: React.FC = () => {
+  // Memoize service to avoid top-level crash and unnecessary reinstantiations
+  const gemini = useMemo(() => new GeminiService(), []);
+
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<CareerAnalysis | null>(null);
@@ -37,7 +38,7 @@ const App: React.FC = () => {
       setResult(analysis);
       setActiveTab('dashboard');
     } catch (err: any) {
-      console.error(err);
+      console.error("Search error:", err);
       const errText = err.message || err.toString();
       if (errText.includes('429') || err.status === 429 || errText.includes('RESOURCE_EXHAUSTED')) {
         setError({
@@ -47,13 +48,13 @@ const App: React.FC = () => {
       } else {
         setError({
           title: "Analysis Error",
-          msg: "Something went wrong while scanning the NZ market. Please try a different role or location."
+          msg: "Something went wrong while scanning the NZ market. Please ensure your API key is correctly configured."
         });
       }
     } finally {
       setIsLoading(false);
     }
-  }, [query]);
+  }, [query, gemini]);
 
   const renderStrategyByLevel = () => {
     if (!result) return null;
