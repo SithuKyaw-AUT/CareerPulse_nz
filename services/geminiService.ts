@@ -8,7 +8,8 @@ export class GeminiService {
   private ai: GoogleGenAI;
 
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+    // Always use process.env.API_KEY directly for initialization
+    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   }
 
   private async withRetry<T>(fn: () => Promise<T>, maxRetries = 3, baseDelay = 2000): Promise<T> {
@@ -88,7 +89,8 @@ export class GeminiService {
       IMPORTANT: NZ Context, NZD currency, NZ English.
     `;
 
-    const response = await this.withRetry(() => this.ai.models.generateContent({
+    // Added explicit type GenerateContentResponse to fix 'unknown' type error
+    const response: GenerateContentResponse = await this.withRetry<GenerateContentResponse>(() => this.ai.models.generateContent({
       model: MODEL_NAME,
       contents: prompt,
       config: {
@@ -97,9 +99,10 @@ export class GeminiService {
       },
     }));
 
+    // Accessing .text property directly as per guidelines
     const text = response.text || "";
     
-    // Extract grounding
+    // Extract grounding chunks from response candidates
     const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     const groundingLinks = groundingChunks
       .filter(chunk => chunk.web)

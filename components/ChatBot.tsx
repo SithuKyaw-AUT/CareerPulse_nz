@@ -37,7 +37,8 @@ const ChatBot: React.FC<Props> = ({ context }) => {
     setIsTyping(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      // Always initialize GoogleGenAI with { apiKey: process.env.API_KEY } as per guidelines
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
       
       let systemInstruction = `You are a direct and specific NZ Career Assistant. 
       STRICT RULES:
@@ -62,7 +63,8 @@ const ChatBot: React.FC<Props> = ({ context }) => {
         config: { systemInstruction }
       });
       
-      const response = await chat.sendMessage({ message: messageText });
+      // Explicitly typing response as GenerateContentResponse
+      const response: GenerateContentResponse = await chat.sendMessage({ message: messageText });
       const botMsg: ChatMessage = { role: 'model', text: response.text || "Sorry, I couldn't process that." };
       setMessages(prev => [...prev, botMsg]);
     } catch (error: any) {
@@ -70,6 +72,8 @@ const ChatBot: React.FC<Props> = ({ context }) => {
       let errorMsg = "Connection error. Please try again.";
       if (error.message?.includes('429') || error.status === 429 || error.toString().includes('RESOURCE_EXHAUSTED')) {
         errorMsg = "I've reached my rate limit for now. Please wait a minute before asking another question.";
+      } else if (error.message?.includes('Key')) {
+        errorMsg = "The AI Assistant is unavailable because the API Key is missing from the environment.";
       }
       setMessages(prev => [...prev, { role: 'model', text: errorMsg }]);
     } finally {
