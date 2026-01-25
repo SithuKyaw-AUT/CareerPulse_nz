@@ -1,7 +1,7 @@
-import { GoogleGenerativeAI, GenerateContentResponse } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { CareerAnalysis } from "../types";
 
-const MODEL_NAME = 'gemini-2.0-flash-exp'; // Use a stable model
+const MODEL_NAME = 'gemini-2.0-flash-exp';
 
 export class GeminiService {
   constructor() {}
@@ -31,14 +31,14 @@ export class GeminiService {
   }
 
   async analyzeRole(query: string): Promise<CareerAnalysis> {
+    // CRITICAL FIX: Use VITE_ prefix for environment variables
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     
     if (!apiKey) {
       throw new Error('VITE_GEMINI_API_KEY not found in environment variables');
     }
 
-    const ai = new GoogleGenerativeAI(apiKey);
-    const model = ai.getGenerativeModel({ model: MODEL_NAME });
+    const ai = new GoogleGenAI({ apiKey });
 
     const isNational = !query.toLowerCase().match(/(auckland|wellington|christchurch|hamilton|tauranga|dunedin|palmerston|nelson|napier|hastings|rotorua|whangarei|new plymouth|invercargill|whanganui|gisborne)/);
 
@@ -68,14 +68,23 @@ export class GeminiService {
 
     try {
       const response = await this.withRetry(async () => {
-        const result = await model.generateContent(prompt);
-        return result.response;
+        return await ai.models.generateContent({
+          model: MODEL_NAME,
+          contents: prompt,
+          config: {
+            tools: [{ googleSearch: {} }],
+          },
+        });
       });
 
-      const text = response.text();
-      
-      // Note: grounding metadata might not be available with all models
-      const groundingLinks: {title: string, url: string}[] = [];
+      const text = response.text || "";
+      const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+      const groundingLinks = groundingChunks
+        .filter((chunk: any) => chunk.web)
+        .map((chunk: any) => ({
+          title: chunk.web?.title || 'Job Listing',
+          url: chunk.web?.uri || '#'
+        }));
 
       return this.parseResponse(text, groundingLinks);
     } catch (error: any) {
