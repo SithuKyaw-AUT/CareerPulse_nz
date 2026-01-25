@@ -42,8 +42,8 @@ const App: React.FC = () => {
       
       if (errText.includes('API_KEY_MISSING')) {
         setError({
-          title: "API Limit Reached",
-          msg: "Google's free tier has a temporary quota limit. Please wait about 60 seconds before clicking 'Analyse' again."
+          title: "Connection Required",
+          msg: "Your Tier 1 API Key is not yet detected in the project environment. Please add 'API_KEY' to your host (e.g. Vercel) and redeploy."
         });
       } else if (errText.includes('429') || err.status === 429 || errText.includes('RESOURCE_EXHAUSTED')) {
         setError({
@@ -53,7 +53,7 @@ const App: React.FC = () => {
       } else if (errText.includes('INVALID_API_KEY')) {
         setError({
           title: "Invalid API Key",
-          msg: "The Google API key provided is not valid. Please check it in Google AI Studio."
+          msg: "The provided API key is invalid. Please check your Tier 1 key in Google AI Studio."
         });
       } else {
         setError({

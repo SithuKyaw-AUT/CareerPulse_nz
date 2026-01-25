@@ -59,7 +59,7 @@ const ChatBot: React.FC<Props> = ({ context }) => {
       ${context ? `Context: Role "${context.roleName}", Location "${context.locationName}".` : ''}`;
 
       const chat = ai.chats.create({
-        model: 'gemini-3-pro-preview',
+        model: 'gemini-3-flash-preview',
         config: { systemInstruction }
       });
       
