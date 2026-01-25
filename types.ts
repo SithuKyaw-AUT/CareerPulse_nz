@@ -36,6 +36,7 @@ export interface CareerAnalysis {
   roleName: string;
   locationName: string;
   summary: string;
+  nzProTip: string;
   marketStats: {
     demandScore: number; // 1-10
     salaryData: SalaryData[];

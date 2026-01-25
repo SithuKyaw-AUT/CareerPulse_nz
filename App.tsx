@@ -40,15 +40,15 @@ const App: React.FC = () => {
       console.error("Search error:", err);
       const errText = err.message || err.toString();
       
-      if (errText.includes('429') || err.status === 429 || errText.includes('RESOURCE_EXHAUSTED')) {
-        setError({
-          title: "API Limit Reached",
-          msg: "Google's free tier has a temporary quota. Please wait about 60 seconds before clicking 'Analyse' again."
-        });
-      } else if (errText.includes('API_KEY_MISSING')) {
+      if (errText.includes('API_KEY_MISSING')) {
         setError({
           title: "Configuration Error",
           msg: "The API_KEY environment variable is missing in Vercel. Go to Vercel Dashboard > Settings > Environment Variables, add API_KEY, and then REDEPLOY your app."
+        });
+      } else if (errText.includes('429') || err.status === 429 || errText.includes('RESOURCE_EXHAUSTED')) {
+        setError({
+          title: "API Limit Reached",
+          msg: "Google's free tier has a temporary quota limit. Please wait about 60 seconds before clicking 'Analyse' again."
         });
       } else if (errText.includes('INVALID_API_KEY')) {
         setError({
@@ -58,7 +58,7 @@ const App: React.FC = () => {
       } else {
         setError({
           title: "Analysis Error",
-          msg: `The AI encountered a problem: ${errText.substring(0, 150)}${errText.length > 150 ? '...' : ''}. Please check your connection and API settings.`
+          msg: `The AI encountered a problem: ${errText.substring(0, 100)}... Please try again.`
         });
       }
     } finally {
@@ -144,7 +144,7 @@ const App: React.FC = () => {
       {/* Hero Search */}
       <div className="bg-white border-b border-slate-100 py-16 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-[900] text-indigo-600 mb-8 tracking-tighter leading-tight">
+          <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tighter leading-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">
             Your NZ Job Search & Strategy Partner.
           </h2>
           <p className="max-w-2xl mx-auto text-slate-500 font-medium text-lg mb-10">
@@ -154,7 +154,7 @@ const App: React.FC = () => {
           <div className="max-w-2xl mx-auto">
             <form onSubmit={(e) => handleSearch(e)} className="relative mb-6">
               <div className="relative group">
-                <div className="absolute -inset-1.5 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-[2rem] blur opacity-15 group-hover:opacity-30 transition duration-1000"></div>
+                <div className="absolute -inset-1.5 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-[2.5rem] blur opacity-15 group-hover:opacity-30 transition duration-1000"></div>
                 <div className="relative flex items-center bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden p-2">
                   <div className="pl-5 text-slate-400">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,7 +165,7 @@ const App: React.FC = () => {
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="e.g, Data analyst in Auckland..."
+                    placeholder="e.g., Insights Analyst in Auckland ..."
                     className="flex-1 px-5 py-4 text-xl text-slate-800 placeholder-slate-300 font-semibold focus:outline-none"
                   />
                   <button
@@ -173,12 +173,7 @@ const App: React.FC = () => {
                     disabled={isLoading || !query.trim()}
                     className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black hover:bg-indigo-700 transition-all disabled:opacity-50 min-w-[140px]"
                   >
-                    {isLoading ? (
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        Thinking
-                      </div>
-                    ) : 'Analyse'}
+                    {isLoading ? 'Thinking...' : 'Analyse'}
                   </button>
                 </div>
               </div>
@@ -224,7 +219,7 @@ const App: React.FC = () => {
         {result && !isLoading && (
           <div className="space-y-12">
             <div className="flex flex-col gap-10">
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8">
                 <div>
                   <span className="text-indigo-600 font-black text-xs uppercase tracking-[0.3em] mb-2 block">Market Report</span>
                   <h3 className="text-4xl font-black text-slate-900 tracking-tight">{result.roleName}</h3>
@@ -232,6 +227,17 @@ const App: React.FC = () => {
                     <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     {result.locationName}
                   </p>
+                </div>
+
+                {/* Right aligned NZ Job Pro Tip banner */}
+                <div className="flex items-center gap-4 text-right">
+                  <div className="flex flex-col items-end">
+                    <h4 className="text-indigo-900 font-black text-xl uppercase tracking-tight">NZ Job Pro Tip</h4>
+                    <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-1 max-w-[200px]">
+                      {result.nzProTip}
+                    </p>
+                  </div>
+                  <div className="w-1.5 h-12 bg-indigo-600 rounded-full"></div>
                 </div>
               </div>
 

@@ -7,7 +7,7 @@ const MODEL_NAME = 'gemini-3-pro-preview';
 export class GeminiService {
   constructor() {}
 
-  private async withRetry<T>(fn: () => Promise<T>, maxRetries = 3, baseDelay = 2000): Promise<T> {
+  private async withRetry<T>(fn: () => Promise<T>, maxRetries = 3, baseDelay = 3000): Promise<T> {
     let lastError: any;
     for (let i = 0; i < maxRetries; i++) {
       try {
@@ -23,7 +23,6 @@ export class GeminiService {
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
-        // If not a rate limit, throw immediately to show the specific error (e.g. invalid key)
         throw error;
       }
     }
@@ -33,8 +32,8 @@ export class GeminiService {
   async analyzeRole(query: string): Promise<CareerAnalysis> {
     const apiKey = process.env.API_KEY;
     
-    if (!apiKey || apiKey === 'undefined' || apiKey === '') {
-      throw new Error("API_KEY_MISSING: The API key is not configured in Vercel Environment Variables.");
+    if (!apiKey) {
+      throw new Error("API_KEY_MISSING");
     }
 
     const ai = new GoogleGenAI({ apiKey });
@@ -50,6 +49,7 @@ export class GeminiService {
         "roleName": "Role Title",
         "locationName": "Location",
         "summary": "2-sentence pulse",
+        "nzProTip": "A short, sharp 10-word tip for NZ job hunters specific to this role",
         "marketStats": {
           "demandScore": 1-10,
           "salaryData": [{"level": "Junior", "min": 60000, "max": 80000}, ...],
@@ -86,9 +86,8 @@ export class GeminiService {
 
       return this.parseResponse(text, groundingLinks);
     } catch (error: any) {
-      // Re-throw with more context if it's a known API error
       if (error.message?.includes('API key not valid')) {
-        throw new Error("INVALID_API_KEY: The provided Google API key is invalid.");
+        throw new Error("INVALID_API_KEY");
       }
       throw error;
     }
@@ -101,7 +100,6 @@ export class GeminiService {
       if (jsonMatch) {
         jsonData = JSON.parse(jsonMatch[1]);
       } else {
-        // Fallback if the model didn't wrap in markdown blocks correctly
         const cleaned = text.replace(/^[^{]*/, '').replace(/[^}]*$/, '');
         jsonData = JSON.parse(cleaned);
       }
@@ -113,6 +111,7 @@ export class GeminiService {
       roleName: jsonData.roleName || "The Role",
       locationName: jsonData.locationName || "New Zealand",
       summary: jsonData.summary || "Active market detected.",
+      nzProTip: jsonData.nzProTip || "Highlight local soft skills and cultural fit for Kiwi employers.",
       marketStats: jsonData.marketStats || { demandScore: 7, salaryData: [], topSkills: [], marketOutlook: "" },
       suggestions: jsonData.suggestions || [],
       interviewGuide: jsonData.interviewGuide || [],

@@ -20,7 +20,7 @@ const ChatBot: React.FC<Props> = ({ context }) => {
     }
   }, [messages]);
 
-  const withRetry = async <T,>(fn: () => Promise<T>, maxRetries = 3, baseDelay = 2000): Promise<T> => {
+  const withRetry = async <T,>(fn: () => Promise<T>, maxRetries = 3, baseDelay = 3000): Promise<T> => {
     let lastError: any;
     for (let i = 0; i < maxRetries; i++) {
       try {
@@ -50,10 +50,12 @@ const ChatBot: React.FC<Props> = ({ context }) => {
     setIsTyping(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+      const apiKey = process.env.API_KEY;
+      if (!apiKey) throw new Error("API Key Missing");
+
+      const ai = new GoogleGenAI({ apiKey });
       
-      const systemInstruction = `You are a direct NZ Career Assistant. 
-      Rules: Answer ONLY the question asked. No filler. Line-by-line reply. 
+      const systemInstruction = `You are a direct NZ Career Assistant. Answer ONLY the question asked. No filler. Line-by-line reply. 
       ${context ? `Context: Role "${context.roleName}", Location "${context.locationName}".` : ''}`;
 
       const chat = ai.chats.create({
