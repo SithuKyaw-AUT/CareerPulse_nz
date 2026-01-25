@@ -29,38 +29,44 @@ export class GeminiService {
     throw lastError;
   }
 
-  async analyzeRole(query: string): Promise<CareerAnalysis> {
+  async analyzeRole(rawNotes: string): Promise<CareerAnalysis> {
     const apiKey = process.env.API_KEY;
-    if (!apiKey) {
-      throw new Error("API_KEY is missing. Please set it in your Vercel Environment Variables.");
+    if (!apiKey || apiKey === "undefined") {
+      throw new Error("API_KEY_MISSING: Environment variable API_KEY is not defined in the build process.");
     }
 
     const ai = new GoogleGenAI({ apiKey });
 
-    const isNational = !query.toLowerCase().match(/(auckland|wellington|christchurch|hamilton|tauranga|dunedin|palmerston|nelson|napier|hastings|rotorua|whangarei|new plymouth|invercargill|whanganui|gisborne)/);
-
     const prompt = `
-      Perform a career analysis for: "${query}" in New Zealand.
-      ${isNational ? 'Query is broad/national. Compare Demand Score (1-10) for Auckland, Wellington, Christchurch in "cityComparison".' : ''}
+      You are an expert New Zealand Career Strategist.
+      
+      USER NOTES:
+      "${rawNotes}"
 
-      Required JSON block in \`\`\`json tags:
+      TASK:
+      1. Extract the primary intended ROLE and the target LOCATION in NZ (Default to "New Zealand" if unspecified).
+      2. Perform a deep career analysis for this target role in the NZ market.
+      3. Use Google Search to find current (real-time) live job listings on Seek.co.nz or TradeMe for this role.
+
+      MANDATORY JSON FORMAT (Response MUST be only valid JSON in a block):
+      \`\`\`json
       {
-        "roleName": "Role Title",
-        "locationName": "Location",
-        "summary": "2-sentence pulse",
+        "roleName": "Extracted Target Job Title",
+        "locationName": "Extracted Location",
+        "summary": "2-sentence market pulse.",
         "marketStats": {
           "demandScore": 1-10,
-          "salaryData": [{"level": "Junior", "min": 60000, "max": 80000}, ...],
-          "topSkills": [{"name": "Skill", "importance": 85, "demand": "Growing/Stable/Declining"}],
-          "marketOutlook": "Outlook text",
-          "cityComparison": [{"city": "City", "value": 8}]
+          "salaryData": [{"level": "Junior", "min": 60000, "max": 80000}, {"level": "Mid", "min": 90000, "max": 120000}, {"level": "Senior", "min": 130000, "max": 160000}],
+          "topSkills": [{"name": "Skill Name", "importance": 85, "demand": "Growing"}],
+          "marketOutlook": "Detailed paragraph about trends in NZ for this role.",
+          "cityComparison": [{"city": "Auckland", "value": 9}, {"city": "Wellington", "value": 7}, {"city": "Christchurch", "value": 6}]
         },
-        "suggestions": [{"title": "Step", "description": "Action", "timeline": "When", "level": "Entry/Junior/Mid-Senior/Senior"}],
-        "interviewGuide": [{"question": "Q", "category": "Behavioral/Technical/Cultural", "rationale": "Why NZ", "technique": "How to answer", "exampleAnswer": "Answer"}]
+        "suggestions": [{"title": "Step Name", "description": "Actionable advice", "timeline": "Next 30 days", "level": "Junior"}],
+        "interviewGuide": [{"question": "The actual question", "category": "Behavioral", "rationale": "Why NZ employers ask this", "technique": "STAR focus", "exampleAnswer": "Sample response"}]
       }
+      \`\`\`
 
-      Context: NZD currency, NZ English, 15 interview questions total.
-      Tool: Find 5-8 live job listings on Seek.co.nz or TradeMe for this role via Google Search.
+      Context: New Zealand market exclusively. Prices in NZD. Tone: Professional, direct, and helpful.
     `;
 
     const response: GenerateContentResponse = await this.withRetry<GenerateContentResponse>(() => ai.models.generateContent({
@@ -87,19 +93,23 @@ export class GeminiService {
   private parseResponse(text: string, links: {title: string, url: string}[]): CareerAnalysis {
     let jsonData: any = {};
     try {
-      const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/) || text.match(/```json([\s\S]*?)```/);
-      if (jsonMatch) {
-        jsonData = JSON.parse(jsonMatch[1]);
-      }
+      // Robust JSON extraction
+      const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/) || text.match(/```json([\s\S]*?)```/) || [null, text];
+      const jsonStr = jsonMatch[1] || text;
+      
+      // Clean up string in case there is trailing markdown
+      const cleanedJson = jsonStr.substring(jsonStr.indexOf('{'), jsonStr.lastIndexOf('}') + 1);
+      jsonData = JSON.parse(cleanedJson);
     } catch (e) {
-      console.error("JSON Parse Error", e);
+      console.error("Critical JSON Parsing Error. Response was:", text);
+      throw new Error("DATA_PARSE_ERROR: The AI response was not in a valid format. Please try again.");
     }
 
     return {
-      roleName: jsonData.roleName || "The Role",
+      roleName: jsonData.roleName || "Career Discovery",
       locationName: jsonData.locationName || "New Zealand",
-      summary: jsonData.summary || "Active market detected.",
-      marketStats: jsonData.marketStats || { demandScore: 7, salaryData: [], topSkills: [], marketOutlook: "" },
+      summary: jsonData.summary || "Scanning the NZ horizons.",
+      marketStats: jsonData.marketStats || { demandScore: 5, salaryData: [], topSkills: [], marketOutlook: "" },
       suggestions: jsonData.suggestions || [],
       interviewGuide: jsonData.interviewGuide || [],
       groundingLinks: links
