@@ -20,7 +20,10 @@ const InterviewGuide: React.FC<Props> = ({ data }) => {
         <div>
           <div className="flex items-center gap-4 mb-2">
             <div className="w-16 h-1 bg-indigo-600 rounded-full"></div>
-            <h3 className="text-3xl font-black text-slate-900">Performance Guide</h3>
+            <div>
+              <h3 className="text-3xl font-black text-slate-900">Performance Guide</h3>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">High-impact prep for the NZ interview stage</p>
+            </div>
           </div>
           <p className="text-slate-500 font-medium">15 curated questions with NZ-specific rationale and winning techniques.</p>
         </div>
@@ -40,6 +43,16 @@ const InterviewGuide: React.FC<Props> = ({ data }) => {
               {cat}
             </button>
           ))}
+        </div>
+      </div>
+
+      <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-xl shadow-slate-200 flex flex-col md:flex-row items-center gap-6 mb-12">
+        <div className="text-4xl">💡</div>
+        <div>
+          <h4 className="font-black uppercase tracking-widest text-sm text-indigo-400">Preparation Strategy</h4>
+          <p className="text-slate-300 text-sm font-medium leading-relaxed">
+            In New Zealand, hiring managers look for evidence of your 'soft skills' as much as your 'hard skills'. Use the behavioral sections to highlight how you handle interpersonal challenges in a Kiwi workplace environment.
+          </p>
         </div>
       </div>
       

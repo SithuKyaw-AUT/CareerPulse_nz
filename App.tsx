@@ -52,7 +52,10 @@ const App: React.FC = () => {
       <div className="max-w-4xl mx-auto space-y-12">
         <div className="flex items-center gap-4 mb-8">
            <div className="w-16 h-1 bg-indigo-600 rounded-full"></div>
-           <h3 className="text-3xl font-black text-slate-900">The Winning Strategy</h3>
+           <div>
+            <h3 className="text-3xl font-black text-slate-900">The Winning Strategy</h3>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Personalized career roadmap with tactical moves</p>
+           </div>
         </div>
 
         {levels.map(level => {
@@ -121,7 +124,7 @@ const App: React.FC = () => {
       {/* Hero Search */}
       <div className="bg-white border-b border-slate-100 py-16 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-[900] text-slate-900 mb-8 tracking-tighter leading-tight">
+          <h2 className="text-4xl md:text-5xl font-[900] text-indigo-600 mb-8 tracking-tighter leading-tight">
             Your NZ Job Search & Strategy Partner.
           </h2>
           <p className="max-w-2xl mx-auto text-slate-500 font-medium text-lg mb-10">
@@ -142,13 +145,13 @@ const App: React.FC = () => {
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Describe your skills and desired role..."
+                    placeholder="e.g, Data analyst in Auckland..."
                     className="flex-1 px-5 py-4 text-xl text-slate-800 placeholder-slate-300 font-semibold focus:outline-none"
                   />
                   <button
                     type="submit"
                     disabled={isLoading || !query.trim()}
-                    className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black hover:bg-black transition-all disabled:opacity-50"
+                    className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black hover:bg-indigo-700 transition-all disabled:opacity-50"
                   >
                     {isLoading ? 'Thinking...' : 'Analyse'}
                   </button>
@@ -187,7 +190,7 @@ const App: React.FC = () => {
         {result && !isLoading && (
           <div className="space-y-12">
             <div className="flex flex-col gap-10">
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                 <div>
                   <span className="text-indigo-600 font-black text-xs uppercase tracking-[0.3em] mb-2 block">Market Report</span>
                   <h3 className="text-4xl font-black text-slate-900 tracking-tight">{result.roleName}</h3>
@@ -196,15 +199,26 @@ const App: React.FC = () => {
                     {result.locationName}, NZ
                   </p>
                 </div>
+
+                {/* NZ Job Pro Tip added on the right side */}
+                <div className="md:max-w-xs text-right bg-emerald-50 border-r-4 border-emerald-500 p-4 rounded-l-2xl shadow-sm self-start">
+                   <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1 flex items-center justify-end gap-2">
+                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
+                     NZ Career Pro Tip
+                   </p>
+                   <p className="text-emerald-900 text-xs font-bold leading-relaxed">
+                     "In NZ, emphasizing your 'cultural fit' and volunteer work is often as valuable as technical mastery."
+                   </p>
+                </div>
               </div>
 
               <div className="flex justify-center border-b border-slate-200">
                 <div className="flex gap-4 md:gap-16 overflow-x-auto no-scrollbar pb-1">
                   {[
-                    { id: 'dashboard', label: 'Intelligence', icon: '📊' },
-                    { id: 'jobs', label: 'Advertised Roles', icon: '💼' },
+                    { id: 'dashboard', label: 'Intelligence', icon: '🧠' },
+                    { id: 'jobs', label: 'Advertised Roles', icon: '📫' },
                     { id: 'strategy', label: 'Winning Strategy', icon: '🎯' },
-                    { id: 'interview', label: 'Interview Prep', icon: '🎤' }
+                    { id: 'interview', label: 'Interview Prep', icon: '🗣️' }
                   ].map((tab) => (
                     <button
                       key={tab.id}

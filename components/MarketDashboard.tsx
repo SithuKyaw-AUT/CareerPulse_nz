@@ -31,7 +31,10 @@ const MarketDashboard: React.FC<Props> = ({ data }) => {
       <div className="bg-indigo-50 border border-indigo-100 p-8 rounded-3xl shadow-sm">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-1.5 h-8 bg-indigo-600 rounded-full"></div>
-          <h4 className="text-indigo-900 font-black text-2xl uppercase tracking-tight">Summary</h4>
+          <div>
+            <h4 className="text-indigo-900 font-black text-2xl uppercase tracking-tight">Summary</h4>
+            <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-1">High-level synthesis of current NZ market conditions</p>
+          </div>
         </div>
         <div className="prose prose-indigo max-w-none text-indigo-800/80 leading-relaxed text-lg font-medium">
           {marketStats.marketOutlook}
@@ -40,7 +43,10 @@ const MarketDashboard: React.FC<Props> = ({ data }) => {
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative group">
+          <div className="absolute top-4 right-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Market Demand</p>
           <div className="flex items-baseline gap-2">
             <span className="text-4xl font-black text-indigo-600">{marketStats.demandScore}/10</span>
@@ -48,21 +54,29 @@ const MarketDashboard: React.FC<Props> = ({ data }) => {
               {marketStats.demandScore > 7 ? 'High Demand' : 'Steady'}
             </span>
           </div>
+          <p className="text-[9px] text-slate-400 font-bold uppercase mt-2 tracking-tighter">Current job volume vs candidate availability</p>
           <div className="w-full bg-slate-100 h-2 rounded-full mt-4 overflow-hidden">
             <div className="bg-indigo-600 h-full transition-all duration-1000" style={{ width: `${marketStats.demandScore * 10}%` }}></div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative group">
+           <div className="absolute top-4 right-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Avg Mid-Career Salary</p>
           <div className="flex items-baseline gap-1">
             <span className="text-4xl font-black text-slate-900">${(salaryData[1]?.Avg || 0).toFixed(0)}k</span>
             <span className="text-slate-400 text-xs font-medium">NZD / yr</span>
           </div>
+          <p className="text-[9px] text-slate-400 font-bold uppercase mt-2 tracking-tighter">Estimates based on recent advertised listings</p>
           <p className="text-xs text-slate-500 mt-4 italic">Benchmarked for local NZ markets</p>
         </div>
 
-        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative group">
+           <div className="absolute top-4 right-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Top Skill Trend</p>
           <div className="flex items-center gap-2">
             <span className="text-lg font-bold text-slate-800">{marketStats.topSkills[0]?.name || 'N/A'}</span>
@@ -71,6 +85,7 @@ const MarketDashboard: React.FC<Props> = ({ data }) => {
               {marketStats.topSkills[0]?.demand}
             </div>
           </div>
+          <p className="text-[9px] text-slate-400 font-bold uppercase mt-2 tracking-tighter">The most 'in-demand' competency right now</p>
           <p className="text-xs text-slate-500 mt-4 font-medium uppercase tracking-tighter">Verified High Interest Sector</p>
         </div>
       </div>
@@ -79,10 +94,16 @@ const MarketDashboard: React.FC<Props> = ({ data }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Salary Benchmarks Chart */}
         <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-          <h4 className="text-lg font-extrabold text-slate-900 mb-6 flex items-center gap-2">
-            <div className="w-1 h-6 bg-indigo-600 rounded-full"></div>
-            Salary Benchmarks (NZD)
-          </h4>
+          <div className="flex items-center justify-between mb-6">
+            <h4 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+              <div className="w-1 h-6 bg-indigo-600 rounded-full"></div>
+              Salary Benchmarks (NZD)
+            </h4>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full">
+              Growth Path Visualization
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 font-medium mb-6">Showing entry-level through senior averages to help you plan your career trajectory.</p>
           <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={salaryData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
@@ -101,10 +122,16 @@ const MarketDashboard: React.FC<Props> = ({ data }) => {
 
         {/* Skills Importance Radar - Updated for readability and legends */}
         <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-          <h4 className="text-lg font-extrabold text-slate-900 mb-6 flex items-center gap-2">
-            <div className="w-1 h-6 bg-blue-500 rounded-full"></div>
-            Core Competency Focus
-          </h4>
+          <div className="flex items-center justify-between mb-6">
+            <h4 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+              <div className="w-1 h-6 bg-blue-500 rounded-full"></div>
+              Core Competency Focus
+            </h4>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full">
+              Employer Expectations Radar
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 font-medium mb-6">A spatial view of which skills are currently being prioritized by NZ hiring managers.</p>
           <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart cx="50%" cy="45%" outerRadius="70%" data={skillsData}>

@@ -12,11 +12,20 @@ const JobResults: React.FC<Props> = ({ data }) => {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 font-bold">2</div>
-          <h3 className="text-2xl font-black text-slate-900 tracking-tight">Live NZ Listings</h3>
+          <div>
+            <h3 className="text-2xl font-black text-slate-900 tracking-tight">Live NZ Listings</h3>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Real-time vacancies discovered via Google Search Grounding</p>
+          </div>
         </div>
         <span className="hidden sm:inline-block bg-emerald-50 text-emerald-700 text-[10px] font-black px-2 py-1 rounded-md uppercase tracking-[0.2em] border border-emerald-100">
           Search Powered
         </span>
+      </div>
+
+      <div className="bg-indigo-50/30 p-4 rounded-2xl border border-indigo-100 mb-8">
+        <p className="text-xs text-indigo-700 font-semibold leading-relaxed">
+          These links were retrieved directly from major New Zealand job boards. Hover or click to explore the full requirements for each role.
+        </p>
       </div>
 
       {data.groundingLinks.length === 0 ? (
