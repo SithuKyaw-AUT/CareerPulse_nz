@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { GeminiService } from './services/geminiService';
 import { CareerAnalysis, StrategyItem } from './types';
 import JobResults from './components/JobResults';
@@ -13,8 +13,30 @@ const App: React.FC = () => {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<CareerAnalysis | null>(null);
-  const [error, setError] = useState<{title: string, msg: string} | null>(null);
+  const [error, setError] = useState<{title: string, msg: string, showConnect?: boolean} | null>(null);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'jobs' | 'interview' | 'strategy'>('dashboard');
+  const [isTier1Connected, setIsTier1Connected] = useState(false);
+
+  useEffect(() => {
+    const checkKey = async () => {
+      if ((window as any).aistudio?.hasSelectedApiKey) {
+        const hasKey = await (window as any).aistudio.hasSelectedApiKey();
+        setIsTier1Connected(hasKey);
+      }
+    };
+    checkKey();
+  }, []);
+
+  const handleConnectTier1 = async () => {
+    if ((window as any).aistudio?.openSelectKey) {
+      await (window as any).aistudio.openSelectKey();
+      setIsTier1Connected(true);
+      setError(null);
+      // We assume selection success and clear error so user can try again
+    } else {
+      window.open('https://ai.google.dev/gemini-api/docs/billing', '_blank');
+    }
+  };
 
   const mainSuggestions = [
     "Project Management in Auckland",
@@ -40,25 +62,22 @@ const App: React.FC = () => {
       console.error("Search error:", err);
       const errText = err.message || err.toString();
       
-      if (errText.includes('API_KEY_MISSING')) {
+      if (errText.includes('API_KEY_REQUIRED') || !process.env.API_KEY) {
         setError({
           title: "Connection Required",
-          msg: "Your Tier 1 API Key is not yet detected in the project environment. Please add 'API_KEY' to your host (e.g. Vercel) and redeploy."
+          msg: "To use this app on your domain with Tier 1 benefits, you need to link your Google Cloud billing-enabled API key. This ensures you have the high quota needed for career intelligence.",
+          showConnect: true
         });
       } else if (errText.includes('429') || err.status === 429 || errText.includes('RESOURCE_EXHAUSTED')) {
         setError({
-          title: "API Limit Reached",
-          msg: "Google's free tier has a temporary quota limit. Please wait about 60 seconds before clicking 'Analyse' again."
-        });
-      } else if (errText.includes('INVALID_API_KEY')) {
-        setError({
-          title: "Invalid API Key",
-          msg: "The provided API key is invalid. Please check your Tier 1 key in Google AI Studio."
+          title: "Tier 1 Quota Limit",
+          msg: "You've reached the temporary limit for this minute. Please wait 60 seconds. If you haven't linked your Tier 1 key yet, do so below.",
+          showConnect: true
         });
       } else {
         setError({
           title: "Analysis Error",
-          msg: `The AI encountered a problem: ${errText.substring(0, 100)}... Please try again.`
+          msg: "The AI is currently busy or encountered an error. Please try again in a moment."
         });
       }
     } finally {
@@ -124,7 +143,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#fcfdfe] pb-24">
-      {/* Navbar */}
       <nav className="bg-white/95 border-b border-slate-100 sticky top-0 z-40 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -138,10 +156,24 @@ const App: React.FC = () => {
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">AI Career Intelligence</p>
             </div>
           </div>
+
+          <div className="flex items-center gap-3">
+             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${isTier1Connected ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+                <div className={`w-2 h-2 rounded-full ${isTier1Connected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></div>
+                <span className="text-[10px] font-black uppercase tracking-widest">{isTier1Connected ? 'Tier 1 Active' : 'Standard Quota'}</span>
+             </div>
+             {!isTier1Connected && (
+               <button 
+                 onClick={handleConnectTier1}
+                 className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-800 underline underline-offset-4"
+               >
+                 Link Billing Account
+               </button>
+             )}
+          </div>
         </div>
       </nav>
 
-      {/* Hero Search */}
       <div className="bg-white border-b border-slate-100 py-16 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tighter leading-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">
@@ -193,12 +225,22 @@ const App: React.FC = () => {
             </div>
 
             {error && (
-              <div className="mt-8 p-6 bg-red-50 border border-red-100 rounded-3xl text-left animate-in fade-in slide-in-from-top-2">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">!</div>
-                  <h4 className="font-black text-red-900 uppercase tracking-widest text-sm">{error.title}</h4>
+              <div className="mt-8 p-8 bg-white border border-slate-200 rounded-[2rem] text-left shadow-2xl animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-10 h-10 bg-red-100 rounded-2xl flex items-center justify-center text-red-600 font-bold">!</div>
+                  <h4 className="font-black text-slate-900 uppercase tracking-widest text-sm">{error.title}</h4>
                 </div>
-                <p className="text-red-700 text-sm font-medium leading-relaxed">{error.msg}</p>
+                <p className="text-slate-600 text-sm font-medium leading-relaxed mb-6">{error.msg}</p>
+                
+                {error.showConnect && (
+                  <button 
+                    onClick={handleConnectTier1}
+                    className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-black transition-all shadow-xl shadow-slate-100 flex items-center justify-center gap-3"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                    Link Billing Account (Tier 1)
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -229,7 +271,6 @@ const App: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Right aligned NZ Job Pro Tip banner */}
                 <div className="flex items-center gap-4 text-right">
                   <div className="flex flex-col items-end">
                     <h4 className="text-indigo-900 font-black text-xl uppercase tracking-tight">NZ Job Pro Tip</h4>

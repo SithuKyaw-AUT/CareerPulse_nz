@@ -15,9 +15,12 @@ export class GeminiService {
       } catch (error: any) {
         lastError = error;
         const errorText = error.message || error.toString();
-        const isRateLimit = errorText.includes('429') || error.status === 429 || errorText.includes('RESOURCE_EXHAUSTED');
+        // Catch both rate limits and missing key errors
+        const isRetryable = errorText.includes('429') || 
+                           error.status === 429 || 
+                           errorText.includes('RESOURCE_EXHAUSTED');
         
-        if (isRateLimit && i < maxRetries - 1) {
+        if (isRetryable && i < maxRetries - 1) {
           const delay = baseDelay * Math.pow(2, i);
           console.warn(`Gemini Quota Hit. Retrying in ${delay}ms... (Attempt ${i + 1}/${maxRetries})`);
           await new Promise(resolve => setTimeout(resolve, delay));
@@ -30,13 +33,8 @@ export class GeminiService {
   }
 
   async analyzeRole(query: string): Promise<CareerAnalysis> {
-    const apiKey = process.env.API_KEY;
-    
-    if (!apiKey) {
-      throw new Error("API_KEY_MISSING");
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
+    // Create instance inside method to ensure we use the most up-to-date API key from the session
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const isNational = !query.toLowerCase().match(/(auckland|wellington|christchurch|hamilton|tauranga|dunedin|palmerston|nelson|napier|hastings|rotorua|whangarei|new plymouth|invercargill|whanganui|gisborne)/);
 
@@ -86,8 +84,10 @@ export class GeminiService {
 
       return this.parseResponse(text, groundingLinks);
     } catch (error: any) {
-      if (error.message?.includes('API key not valid')) {
-        throw new Error("INVALID_API_KEY");
+      const errorText = error.message || error.toString();
+      // If the entity is not found or key is empty, it's often a missing key issue on domains
+      if (errorText.includes('API key not valid') || errorText.includes('entity was not found') || !process.env.API_KEY) {
+        throw new Error("API_KEY_REQUIRED");
       }
       throw error;
     }
