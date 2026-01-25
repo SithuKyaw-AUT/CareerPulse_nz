@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
-import { ChatMessage, CareerAnalysis } from './types';
+import { ChatMessage, CareerAnalysis } from '../types';
 
 interface Props {
   context?: CareerAnalysis | null;
@@ -50,13 +50,10 @@ const ChatBot: React.FC<Props> = ({ context }) => {
     setIsTyping(true);
 
     try {
-      const apiKey = process.env.API_KEY;
-      if (!apiKey) throw new Error("API Key Missing");
+      // Instantiating right before use handles environment issues and ensures latest API key
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
       
-      const ai = new GoogleGenAI({ apiKey });
-      
-      const systemInstruction = `You are a direct NZ Career Assistant. 
-      Rules: Answer ONLY the question asked. No filler. Line-by-line reply. 
+      const systemInstruction = `You are a direct NZ Career Assistant. Answer ONLY the question asked. No filler. Line-by-line reply. 
       ${context ? `Context: Role "${context.roleName}", Location "${context.locationName}".` : ''}`;
 
       const chat = ai.chats.create({
@@ -72,7 +69,7 @@ const ChatBot: React.FC<Props> = ({ context }) => {
       const errorText = error.message || error.toString();
       let errorMsg = "I encountered an error. Please try again.";
       if (errorText.includes('429') || error.status === 429 || errorText.includes('RESOURCE_EXHAUSTED')) {
-        errorMsg = "🛑 Rate limit reached. Please wait ~60 seconds and try again.";
+        errorMsg = "🛑 Rate limit reached. The Google API is resting. Please wait ~60 seconds and try your question again.";
       }
       setMessages(prev => [...prev, { role: 'model', text: errorMsg }]);
     } finally {
