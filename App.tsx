@@ -13,7 +13,7 @@ const App: React.FC = () => {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<CareerAnalysis | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{title: string, msg: string} | null>(null);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'jobs' | 'interview' | 'strategy'>('dashboard');
 
   const mainSuggestions = [
@@ -38,10 +38,17 @@ const App: React.FC = () => {
       setActiveTab('dashboard');
     } catch (err: any) {
       console.error(err);
-      if (err.message?.includes('429') || err.status === 429 || err.toString().includes('RESOURCE_EXHAUSTED')) {
-        setError("Rate limit reached. Please wait 1 minute before searching again.");
+      const errText = err.message || err.toString();
+      if (errText.includes('429') || err.status === 429 || errText.includes('RESOURCE_EXHAUSTED')) {
+        setError({
+          title: "API Limit Reached",
+          msg: "Google's free tier has a temporary quota. Please wait about 60 seconds before clicking 'Analyse' again."
+        });
       } else {
-        setError("Analysis failed. Please try a more specific role or location.");
+        setError({
+          title: "Analysis Error",
+          msg: "Something went wrong while scanning the NZ market. Please try a different role or location."
+        });
       }
     } finally {
       setIsLoading(false);
@@ -120,12 +127,6 @@ const App: React.FC = () => {
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">AI Career Intelligence</p>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-6">
-             <div className="text-right">
-                <p className="text-xs font-black text-emerald-600 uppercase tracking-tighter">Live NZ Data</p>
-                <p className="text-[10px] text-slate-400 font-bold uppercase">Updated Real-Time</p>
-             </div>
-          </div>
         </div>
       </nav>
 
@@ -159,16 +160,21 @@ const App: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading || !query.trim()}
-                    className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black hover:bg-indigo-700 transition-all disabled:opacity-50"
+                    className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black hover:bg-indigo-700 transition-all disabled:opacity-50 min-w-[140px]"
                   >
-                    {isLoading ? 'Thinking...' : 'Analyse'}
+                    {isLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        Thinking
+                      </div>
+                    ) : 'Analyse'}
                   </button>
                 </div>
               </div>
             </form>
 
             <div className="flex flex-wrap justify-center gap-2">
-              <span className="text-xs font-black text-slate-400 uppercase tracking-widest mr-2 self-center">Try searching:</span>
+              <span className="text-xs font-black text-slate-400 uppercase tracking-widest mr-2 self-center">Try:</span>
               {mainSuggestions.map((suggestion) => (
                 <button
                   key={suggestion}
@@ -179,7 +185,16 @@ const App: React.FC = () => {
                 </button>
               ))}
             </div>
-            {error && <p className="mt-6 text-red-500 text-sm font-bold uppercase tracking-widest">{error}</p>}
+
+            {error && (
+              <div className="mt-8 p-6 bg-red-50 border border-red-100 rounded-3xl text-left animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">!</div>
+                  <h4 className="font-black text-red-900 uppercase tracking-widest text-sm">{error.title}</h4>
+                </div>
+                <p className="text-red-700 text-sm font-medium leading-relaxed">{error.msg}</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -207,16 +222,6 @@ const App: React.FC = () => {
                     {result.locationName}
                   </p>
                 </div>
-
-                <div className="md:max-w-xs text-right bg-emerald-50 border-r-4 border-emerald-500 p-4 rounded-l-2xl shadow-sm self-start">
-                   <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1 flex items-center justify-end gap-2">
-                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
-                     NZ Career Pro Tip
-                   </p>
-                   <p className="text-emerald-900 text-xs font-bold leading-relaxed">
-                     "In NZ, emphasizing your 'cultural fit' and volunteer work is often as valuable as technical mastery."
-                   </p>
-                </div>
               </div>
 
               <div className="flex justify-center border-b border-slate-200">
@@ -231,17 +236,11 @@ const App: React.FC = () => {
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id as any)}
                       className={`relative flex items-center gap-3 px-4 py-5 transition-all whitespace-nowrap group ${
-                        activeTab === tab.id
-                          ? 'text-indigo-600'
-                          : 'text-slate-400 hover:text-slate-600'
+                        activeTab === tab.id ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'
                       }`}
                     >
-                      <span className={`text-2xl transition-transform group-hover:scale-110 ${activeTab === tab.id ? 'scale-110' : ''}`}>
-                        {tab.icon}
-                      </span>
-                      <span className={`text-sm font-black uppercase tracking-[0.15em] ${activeTab === tab.id ? 'opacity-100' : 'opacity-70'}`}>
-                        {tab.label}
-                      </span>
+                      <span className={`text-2xl transition-transform group-hover:scale-110 ${activeTab === tab.id ? 'scale-110' : ''}`}>{tab.icon}</span>
+                      <span className={`text-sm font-black uppercase tracking-[0.15em] ${activeTab === tab.id ? 'opacity-100' : 'opacity-70'}`}>{tab.label}</span>
                       {activeTab === tab.id && (
                         <div className="absolute bottom-0 left-0 w-full h-1.5 bg-indigo-600 rounded-full animate-in slide-in-from-left-2 duration-300"></div>
                       )}
@@ -253,20 +252,9 @@ const App: React.FC = () => {
 
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
               {activeTab === 'dashboard' && <MarketDashboard data={result} />}
-              
-              {activeTab === 'jobs' && (
-                <div className="max-w-4xl mx-auto">
-                  <JobResults data={result} />
-                </div>
-              )}
-
+              {activeTab === 'jobs' && <div className="max-w-4xl mx-auto"><JobResults data={result} /></div>}
               {activeTab === 'strategy' && renderStrategyByLevel()}
-
-              {activeTab === 'interview' && (
-                <div className="max-w-4xl mx-auto">
-                  <InterviewGuide data={result} />
-                </div>
-              )}
+              {activeTab === 'interview' && <div className="max-w-4xl mx-auto"><InterviewGuide data={result} /></div>}
             </div>
           </div>
         )}
