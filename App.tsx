@@ -5,7 +5,6 @@ import JobResults from './components/JobResults';
 import InterviewGuide from './components/InterviewGuide';
 import MarketDashboard from './components/MarketDashboard';
 import ChatBot from './components/ChatBot';
-import { DataQualityBadge } from './components/DataQualityBadge';
 
 const App: React.FC = () => {
   const gemini = useMemo(() => new GeminiService(), []);
@@ -215,12 +214,6 @@ const App: React.FC = () => {
 
         {result && !isLoading && (
           <div className="space-y-12">
-            {/* DATA QUALITY BADGE - Shows reliability of analysis */}
-            <DataQualityBadge 
-              dataQuality={result.dataQuality}
-              groundingLinks={result.groundingLinks}
-            />
-
             <div className="flex flex-col gap-10">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8">
                 <div>

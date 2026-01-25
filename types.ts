@@ -4,16 +4,6 @@ export interface CareerAnalysis {
   summary: string;
   nzProTip: string;
   
-  // New: Data quality indicators
-  dataQuality?: {
-    isGrounded: boolean;
-    confidence: 'high' | 'medium' | 'low';
-    sourceCount?: number;
-    groundingQuality?: string;
-    sources?: string;
-    lastUpdated?: string;
-  };
-  
   marketStats: {
     demandScore: number;
     salaryData: SalaryRange[];
@@ -25,9 +15,6 @@ export interface CareerAnalysis {
   suggestions: CareerSuggestion[];
   interviewGuide: InterviewQuestion[];
   groundingLinks: GroundingLink[];
-  
-  // New: Search entry point for additional context
-  searchEntryPoint?: string | null;
 }
 
 export interface SalaryRange {
@@ -65,4 +52,11 @@ export interface InterviewQuestion {
 export interface GroundingLink {
   title: string;
   url: string;
+}
+
+export interface StrategyItem {
+  title: string;
+  description: string;
+  timeline: string;
+  level: 'Entry' | 'Junior' | 'Mid-Senior' | 'Senior' | 'General';
 }
