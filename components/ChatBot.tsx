@@ -59,7 +59,7 @@ const ChatBot: React.FC<Props> = ({ context }) => {
       ${context ? `Context: Role "${context.roleName}", Location "${context.locationName}".` : ''}`;
 
       const chat = ai.chats.create({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-3-pro-preview',
         config: { systemInstruction }
       });
       
@@ -69,9 +69,9 @@ const ChatBot: React.FC<Props> = ({ context }) => {
     } catch (error: any) {
       console.error(error);
       const errorText = error.message || error.toString();
-      let errorMsg = "I encountered an error. Please try again.";
+      let errorMsg = "I encountered an error. Please check your API key and try again.";
       if (errorText.includes('429') || error.status === 429 || errorText.includes('RESOURCE_EXHAUSTED')) {
-        errorMsg = "🛑 Rate limit reached. The Google API is resting. Please wait ~60 seconds and try your question again.";
+        errorMsg = "🛑 Rate limit reached. Please wait ~60 seconds and try your question again.";
       }
       setMessages(prev => [...prev, { role: 'model', text: errorMsg }]);
     } finally {

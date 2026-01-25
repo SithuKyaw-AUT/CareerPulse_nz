@@ -15,7 +15,6 @@ export class GeminiService {
       } catch (error: any) {
         lastError = error;
         const errorText = error.message || error.toString();
-        // Catch both rate limits and missing key errors
         const isRetryable = errorText.includes('429') || 
                            error.status === 429 || 
                            errorText.includes('RESOURCE_EXHAUSTED');
@@ -33,7 +32,6 @@ export class GeminiService {
   }
 
   async analyzeRole(query: string): Promise<CareerAnalysis> {
-    // Create instance inside method to ensure we use the most up-to-date API key from the session
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const isNational = !query.toLowerCase().match(/(auckland|wellington|christchurch|hamilton|tauranga|dunedin|palmerston|nelson|napier|hastings|rotorua|whangarei|new plymouth|invercargill|whanganui|gisborne)/);
@@ -84,11 +82,6 @@ export class GeminiService {
 
       return this.parseResponse(text, groundingLinks);
     } catch (error: any) {
-      const errorText = error.message || error.toString();
-      // If the entity is not found or key is empty, it's often a missing key issue on domains
-      if (errorText.includes('API key not valid') || errorText.includes('entity was not found') || !process.env.API_KEY) {
-        throw new Error("API_KEY_REQUIRED");
-      }
       throw error;
     }
   }
