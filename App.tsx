@@ -8,7 +8,6 @@ import MarketDashboard from './components/MarketDashboard';
 import ChatBot from './components/ChatBot';
 
 const App: React.FC = () => {
-  // Memoize service to avoid top-level crash and unnecessary reinstantiations
   const gemini = useMemo(() => new GeminiService(), []);
 
   const [query, setQuery] = useState('');
@@ -40,15 +39,26 @@ const App: React.FC = () => {
     } catch (err: any) {
       console.error("Search error:", err);
       const errText = err.message || err.toString();
+      
       if (errText.includes('429') || err.status === 429 || errText.includes('RESOURCE_EXHAUSTED')) {
         setError({
           title: "API Limit Reached",
           msg: "Google's free tier has a temporary quota. Please wait about 60 seconds before clicking 'Analyse' again."
         });
+      } else if (errText.includes('API_KEY_MISSING')) {
+        setError({
+          title: "Configuration Error",
+          msg: "The API_KEY environment variable is missing in Vercel. Go to Vercel Dashboard > Settings > Environment Variables, add API_KEY, and then REDEPLOY your app."
+        });
+      } else if (errText.includes('INVALID_API_KEY')) {
+        setError({
+          title: "Invalid API Key",
+          msg: "The Google API key provided is not valid. Please check it in Google AI Studio."
+        });
       } else {
         setError({
           title: "Analysis Error",
-          msg: "Something went wrong while scanning the NZ market. Please ensure your API key is correctly configured."
+          msg: `The AI encountered a problem: ${errText.substring(0, 150)}${errText.length > 150 ? '...' : ''}. Please check your connection and API settings.`
         });
       }
     } finally {

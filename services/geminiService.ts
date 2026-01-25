@@ -1,13 +1,13 @@
 
-import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
-import { CareerAnalysis, InterviewQuestion, StrategyItem } from "../types";
+import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
+import { CareerAnalysis } from "../types";
 
 const MODEL_NAME = 'gemini-3-pro-preview';
 
 export class GeminiService {
   constructor() {}
 
-  private async withRetry<T>(fn: () => Promise<T>, maxRetries = 4, baseDelay = 3000): Promise<T> {
+  private async withRetry<T>(fn: () => Promise<T>, maxRetries = 3, baseDelay = 2000): Promise<T> {
     let lastError: any;
     for (let i = 0; i < maxRetries; i++) {
       try {
@@ -23,6 +23,7 @@ export class GeminiService {
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
+        // If not a rate limit, throw immediately to show the specific error (e.g. invalid key)
         throw error;
       }
     }
@@ -30,8 +31,13 @@ export class GeminiService {
   }
 
   async analyzeRole(query: string): Promise<CareerAnalysis> {
-    // Initialize right before call to ensure up-to-date config and avoid ReferenceError on boot
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+    const apiKey = process.env.API_KEY;
+    
+    if (!apiKey || apiKey === 'undefined' || apiKey === '') {
+      throw new Error("API_KEY_MISSING: The API key is not configured in Vercel Environment Variables.");
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
 
     const isNational = !query.toLowerCase().match(/(auckland|wellington|christchurch|hamilton|tauranga|dunedin|palmerston|nelson|napier|hastings|rotorua|whangarei|new plymouth|invercargill|whanganui|gisborne)/);
 
@@ -59,25 +65,33 @@ export class GeminiService {
       Tool: Find 5-8 live job listings on Seek.co.nz or TradeMe for this role via Google Search.
     `;
 
-    const response: GenerateContentResponse = await this.withRetry<GenerateContentResponse>(() => ai.models.generateContent({
-      model: MODEL_NAME,
-      contents: prompt,
-      config: {
-        thinkingConfig: { thinkingBudget: 24576 },
-        tools: [{ googleSearch: {} }],
-      },
-    }));
-
-    const text = response.text || "";
-    const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-    const groundingLinks = groundingChunks
-      .filter(chunk => chunk.web)
-      .map(chunk => ({
-        title: chunk.web?.title || 'Job Listing',
-        url: chunk.web?.uri || '#'
+    try {
+      const response: GenerateContentResponse = await this.withRetry<GenerateContentResponse>(() => ai.models.generateContent({
+        model: MODEL_NAME,
+        contents: prompt,
+        config: {
+          thinkingConfig: { thinkingBudget: 24576 },
+          tools: [{ googleSearch: {} }],
+        },
       }));
 
-    return this.parseResponse(text, groundingLinks);
+      const text = response.text || "";
+      const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+      const groundingLinks = groundingChunks
+        .filter(chunk => chunk.web)
+        .map(chunk => ({
+          title: chunk.web?.title || 'Job Listing',
+          url: chunk.web?.uri || '#'
+        }));
+
+      return this.parseResponse(text, groundingLinks);
+    } catch (error: any) {
+      // Re-throw with more context if it's a known API error
+      if (error.message?.includes('API key not valid')) {
+        throw new Error("INVALID_API_KEY: The provided Google API key is invalid.");
+      }
+      throw error;
+    }
   }
 
   private parseResponse(text: string, links: {title: string, url: string}[]): CareerAnalysis {
@@ -86,6 +100,10 @@ export class GeminiService {
       const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/) || text.match(/```json([\s\S]*?)```/);
       if (jsonMatch) {
         jsonData = JSON.parse(jsonMatch[1]);
+      } else {
+        // Fallback if the model didn't wrap in markdown blocks correctly
+        const cleaned = text.replace(/^[^{]*/, '').replace(/[^}]*$/, '');
+        jsonData = JSON.parse(cleaned);
       }
     } catch (e) {
       console.error("JSON Parse Error", e);
