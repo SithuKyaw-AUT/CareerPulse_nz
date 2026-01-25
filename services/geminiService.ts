@@ -5,21 +5,7 @@ import { CareerAnalysis, InterviewQuestion, StrategyItem } from "../types";
 const MODEL_NAME = 'gemini-3-pro-preview';
 
 export class GeminiService {
-  private ai: GoogleGenAI | null = null;
-
-  constructor() {
-    try {
-      // Safely check if process exists before accessing to prevent ReferenceError in browser
-      const apiKey = typeof process !== 'undefined' ? process.env?.API_KEY : (globalThis as any).process?.env?.API_KEY;
-      if (apiKey) {
-        this.ai = new GoogleGenAI({ apiKey });
-      } else {
-        console.error("Gemini API Key is missing from environment.");
-      }
-    } catch (e) {
-      console.error("Failed to initialize GoogleGenAI service:", e);
-    }
-  }
+  constructor() {}
 
   private async withRetry<T>(fn: () => Promise<T>, maxRetries = 4, baseDelay = 3000): Promise<T> {
     let lastError: any;
@@ -44,9 +30,8 @@ export class GeminiService {
   }
 
   async analyzeRole(query: string): Promise<CareerAnalysis> {
-    if (!this.ai) {
-      throw new Error("AI Service not initialized. Check API Key configuration.");
-    }
+    // Initialize right before call to ensure up-to-date config and avoid ReferenceError on boot
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
     const isNational = !query.toLowerCase().match(/(auckland|wellington|christchurch|hamilton|tauranga|dunedin|palmerston|nelson|napier|hastings|rotorua|whangarei|new plymouth|invercargill|whanganui|gisborne)/);
 
@@ -54,9 +39,7 @@ export class GeminiService {
       Perform a career analysis for: "${query}" in New Zealand.
       ${isNational ? 'Query is broad/national. Compare Demand Score (1-10) for Auckland, Wellington, Christchurch in "cityComparison".' : ''}
 
-      Required: 
-      1. Conversational summary.
-      2. JSON block in \`\`\`json tags:
+      Required JSON block in \`\`\`json tags:
       {
         "roleName": "Role Title",
         "locationName": "Location",
@@ -76,11 +59,11 @@ export class GeminiService {
       Tool: Find 5-8 live job listings on Seek.co.nz or TradeMe for this role via Google Search.
     `;
 
-    const response: GenerateContentResponse = await this.withRetry<GenerateContentResponse>(() => this.ai!.models.generateContent({
+    const response: GenerateContentResponse = await this.withRetry<GenerateContentResponse>(() => ai.models.generateContent({
       model: MODEL_NAME,
       contents: prompt,
       config: {
-        thinkingConfig: { thinkingBudget: 32768 },
+        thinkingConfig: { thinkingBudget: 24576 },
         tools: [{ googleSearch: {} }],
       },
     }));
