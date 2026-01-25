@@ -42,8 +42,8 @@ const App: React.FC = () => {
       
       if (errText.includes('API_KEY_MISSING')) {
         setError({
-          title: "Configuration Error",
-          msg: "The API_KEY environment variable is missing in Vercel. Go to Vercel Dashboard > Settings > Environment Variables, add API_KEY, and then REDEPLOY your app."
+          title: "API Limit Reached",
+          msg: "Google's free tier has a temporary quota limit. Please wait about 60 seconds before clicking 'Analyse' again."
         });
       } else if (errText.includes('429') || err.status === 429 || errText.includes('RESOURCE_EXHAUSTED')) {
         setError({
