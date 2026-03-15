@@ -50,7 +50,7 @@ const ChatBot: React.FC<Props> = ({ context }) => {
     setIsTyping(true);
 
     try {
-      const apiKey = process.env.API_KEY;
+      const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) throw new Error("API Key Missing");
 
       const ai = new GoogleGenAI({ apiKey });
@@ -59,7 +59,7 @@ const ChatBot: React.FC<Props> = ({ context }) => {
       ${context ? `Context: Role "${context.roleName}", Location "${context.locationName}".` : ''}`;
 
       const chat = ai.chats.create({
-        model: 'gemini-3-pro-preview',
+        model: 'gemini-3.1-pro-preview',
         config: { systemInstruction }
       });
       

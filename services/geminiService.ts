@@ -1,7 +1,8 @@
-import { GoogleGenAI } from "@google/genai";
+
+import { GoogleGenAI, GenerateContentResponse, ThinkingLevel } from "@google/genai";
 import { CareerAnalysis } from "../types";
 
-const MODEL_NAME = 'gemini-2.0-flash-exp';
+const MODEL_NAME = 'gemini-3-flash-preview'; 
 
 export class GeminiService {
   constructor() {}
@@ -32,11 +33,9 @@ export class GeminiService {
 
   async analyzeRole(query: string): Promise<CareerAnalysis> {
     const apiKey = process.env.GEMINI_API_KEY;
-    
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY not found in environment variables');
+      throw new Error("GEMINI_API_KEY is not set in the environment variables.");
     }
-
     const ai = new GoogleGenAI({ apiKey });
 
     const isNational = !query.toLowerCase().match(/(auckland|wellington|christchurch|hamilton|tauranga|dunedin|palmerston|nelson|napier|hastings|rotorua|whangarei|new plymouth|invercargill|whanganui|gisborne)/);
@@ -67,28 +66,26 @@ export class GeminiService {
     `;
 
     try {
-      const response = await this.withRetry(async () => {
-        return await ai.models.generateContent({
-          model: MODEL_NAME,
-          contents: prompt,
-          config: {
-            tools: [{ googleSearch: {} }],
-          },
-        });
-      });
+      const response: GenerateContentResponse = await this.withRetry<GenerateContentResponse>(() => ai.models.generateContent({
+        model: MODEL_NAME,
+        contents: prompt,
+        config: {
+          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+          tools: [{ googleSearch: {} }],
+        },
+      }));
 
       const text = response.text || "";
       const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
       const groundingLinks = groundingChunks
-        .filter((chunk: any) => chunk.web)
-        .map((chunk: any) => ({
+        .filter(chunk => chunk.web)
+        .map(chunk => ({
           title: chunk.web?.title || 'Job Listing',
           url: chunk.web?.uri || '#'
         }));
 
       return this.parseResponse(text, groundingLinks);
     } catch (error: any) {
-      console.error('Gemini API Error:', error);
       throw error;
     }
   }
@@ -112,7 +109,7 @@ export class GeminiService {
       locationName: jsonData.locationName || "New Zealand",
       summary: jsonData.summary || "Active market detected.",
       nzProTip: jsonData.nzProTip || "Highlight local soft skills and cultural fit for Kiwi employers.",
-      marketStats: jsonData.marketStats || { demandScore: 7, salaryData: [], topSkills: [], marketOutlook: "", cityComparison: [] },
+      marketStats: jsonData.marketStats || { demandScore: 7, salaryData: [], topSkills: [], marketOutlook: "" },
       suggestions: jsonData.suggestions || [],
       interviewGuide: jsonData.interviewGuide || [],
       groundingLinks: links
